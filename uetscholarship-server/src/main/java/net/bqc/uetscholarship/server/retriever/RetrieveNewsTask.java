@@ -10,6 +10,7 @@ import com.shirwa.simplistic_rss.RssItem;
 import com.shirwa.simplistic_rss.RssReader;
 
 import net.bqc.uetscholarship.server.notifier.FirebaseNotifier;
+import net.bqc.uetscholarship.server.notifier.MessengerNotifier;
 
 @Component
 public class RetrieveNewsTask {
@@ -17,7 +18,10 @@ public class RetrieveNewsTask {
 	private static final String FEED_URL = "https://uet.vnu.edu.vn/category/tin-tuc/tin-sinh-vien/feed";
 	
 	@Autowired
-	private FirebaseNotifier notifier;
+	private FirebaseNotifier firebaseNotifier;
+	
+	@Autowired
+	private MessengerNotifier messengerNotifier;
 	
 	public String call(String latestLink) {
 		try {
@@ -46,7 +50,8 @@ public class RetrieveNewsTask {
 	
 	private void notify(List<RssItem> latestItems) {
 		latestItems.forEach(item -> {
-			notifier.notify(item);
+			firebaseNotifier.notify(item);
+			messengerNotifier.notify(item);
 		});
 	}
 

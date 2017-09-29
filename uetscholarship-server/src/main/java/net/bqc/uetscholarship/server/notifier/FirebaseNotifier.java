@@ -28,7 +28,7 @@ public class FirebaseNotifier implements INotifier {
 	private String FCM_API_KEY;
 
 	@Override
-	public void notify(RssItem item) {
+	public boolean notify(RssItem item) {
 		try {
 			FcmNotification notification = new FcmNotification("UET News", item.getTitle());
 			notification.putData("link", item.getLink());
@@ -39,10 +39,12 @@ public class FirebaseNotifier implements INotifier {
 			headers.add("Authorization", "key=" + FCM_API_KEY);
 			HttpEntity<Object> entity = new HttpEntity<>(message, headers);
 			String rsp = RestTemplateUtil.sendPost(FCM_API_URL, entity);
-			logger.info("Repsonse: {}", rsp);
+			logger.info("Firebase response for {}: {}", item.getLink(), rsp);
+			return true;
 		}
 		catch (Exception e) {
 			e.printStackTrace();
+			return false;
 		}
 	}
 
