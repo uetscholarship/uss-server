@@ -2,12 +2,10 @@ package net.bqc.uetscholarship.messenger.jaxws;
 
 import java.util.List;
 
-import javax.annotation.PostConstruct;
 import javax.jws.WebMethod;
 import javax.jws.WebService;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 
 import com.restfb.types.send.Message;

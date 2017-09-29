@@ -27,12 +27,8 @@ import net.bqc.uetscholarship.messenger.dao.UserDao;
 import net.bqc.uetscholarship.messenger.model.User;
 import net.bqc.uetscholarship.messenger.service.MessengerService;
 
-import javax.annotation.PostConstruct;
-
 @RestController
 public class WebhookController {
-	
-	private static final Logger logger = LoggerFactory.getLogger(WebhookController.class);
 	
 	@Autowired
 	private MessengerService messengerService;
