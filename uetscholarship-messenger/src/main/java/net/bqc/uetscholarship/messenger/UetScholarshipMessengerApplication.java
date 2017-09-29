@@ -5,8 +5,6 @@ import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.web.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.support.ResourceBundleMessageSource;
@@ -14,15 +12,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 @SpringBootApplication
 @ComponentScan("net.bqc.uetscholarship.messenger")
-public class UetScholarshipMessengerApplication extends SpringBootServletInitializer {
+public class UetScholarshipMessengerApplication {
 
 	@Autowired
 	private DataSource dataSource;
-	
-	@Override
-	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-		return application.sources(UetScholarshipMessengerApplication.class);
-	}
 
 	public static void main(String[] args) {
 		SpringApplication.run(UetScholarshipMessengerApplication.class, args);
