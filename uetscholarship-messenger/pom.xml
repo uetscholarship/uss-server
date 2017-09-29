@@ -13,9 +13,9 @@
     <artifactId>uetscholarship-messenger</artifactId>
     <name>UETScholarship Messenger</name>
 
-    <properties>
+<!--     <properties>
         <start-class>net.bqc.uetscholarship.server.UetScholarshipApplication</start-class>
-    </properties>
+    </properties> -->
 
     <dependencies>
         <dependency>
