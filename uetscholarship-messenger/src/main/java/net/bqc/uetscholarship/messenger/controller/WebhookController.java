@@ -27,6 +27,8 @@ import net.bqc.uetscholarship.messenger.dao.UserDao;
 import net.bqc.uetscholarship.messenger.model.User;
 import net.bqc.uetscholarship.messenger.service.MessengerService;
 
+import javax.annotation.PostConstruct;
+
 @RestController
 public class WebhookController {
 	
@@ -45,6 +47,12 @@ public class WebhookController {
 	private UserDao userDao;
 	
 	private JsonMapper jsonMapper = new DefaultJsonMapper();
+
+	@PostConstruct
+	public void init() {
+		System.out.println("WH is initialized");
+		System.out.println("messengerService: " + messengerService);
+	}
 
 	@RequestMapping(value="/webhook", method=RequestMethod.GET)
 	public String validate(Model model,

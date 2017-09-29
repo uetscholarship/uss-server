@@ -1,4 +1,4 @@
-package net.bqc.uetscholarship.messenger.config;
+package net.bqc.uetscholarship.server.config;
 
 import net.bqc.uetscholarship.server.UetScholarshipApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;

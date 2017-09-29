@@ -1,4 +1,4 @@
-package net.bqc.uetscholarship.messenger.config;
+package net.bqc.uetscholarship.server.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;

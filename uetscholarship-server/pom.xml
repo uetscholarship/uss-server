@@ -31,7 +31,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-tomcat</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -44,24 +44,6 @@
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-spring-boot-starter-jaxws</artifactId>
-        </dependency>
-
-        <!-- RestFb -->
-        <dependency>
-            <groupId>com.restfb</groupId>
-            <artifactId>restfb</artifactId>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/org.springframework/spring-jdbc -->
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-jdbc</artifactId>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/org.hsqldb/hsqldb -->
-        <dependency>
-            <groupId>org.hsqldb</groupId>
-            <artifactId>hsqldb</artifactId>
         </dependency>
 
         <dependency>

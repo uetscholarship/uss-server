@@ -2,10 +2,12 @@ package net.bqc.uetscholarship.messenger.jaxws;
 
 import java.util.List;
 
+import javax.annotation.PostConstruct;
 import javax.jws.WebMethod;
 import javax.jws.WebService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 
 import com.restfb.types.send.Message;
@@ -18,22 +20,37 @@ import net.bqc.uetscholarship.messenger.service.MessengerService;
 @WebService(serviceName = "NotifierService", portName = "NotifierPort")
 public class NotifierServiceEndpoint extends SpringBeanAutowiringSupport {
 
-	@Autowired
-	private MessengerService messengerService;
-	
-	@Autowired
-	private UserDao userDao;
-	
-	@WebMethod
-	public void notify(RssItem item) {
-		// build new message
-		Message message = messengerService.buildNewsMessage(
-				item.getTitle(), item.getLink());
-		
-		// send to all subscribed users
-		List<User> subscribedUsers = userDao.findAllSubscribedUsers();
-		subscribedUsers.forEach(user -> {
-			messengerService.sendMessage(user.getFbId(), message);
-		});
-	}
+    @Autowired
+    private MessengerService messengerService;
+
+    @Autowired
+    private UserDao userDao;
+
+    @PostConstruct
+    public void init() {
+        System.out.println("WS is initialized");
+        System.out.println("messengerService: " + messengerService);
+        System.out.println("userDao: " + userDao);
+    }
+
+    @WebMethod
+    public boolean notify(RssItem item) {
+        // build new message
+        try {
+            Message message = messengerService.buildNewsMessage(
+                    item.getTitle(), item.getLink());
+
+            // send to all subscribed users
+            List<User> subscribedUsers = userDao.findAllSubscribedUsers();
+            subscribedUsers.forEach(user -> {
+                messengerService.sendMessage(user.getFbId(), message);
+            });
+
+            return true;
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

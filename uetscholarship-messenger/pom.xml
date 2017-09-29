@@ -46,6 +46,24 @@
             <artifactId>cxf-spring-boot-starter-jaxws</artifactId>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.springframework/spring-jdbc -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+        </dependency>
+
+        <!-- RestFb -->
+        <dependency>
+            <groupId>com.restfb</groupId>
+            <artifactId>restfb</artifactId>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.hsqldb/hsqldb -->
+        <dependency>
+            <groupId>org.hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>net.bqc</groupId>
             <artifactId>uetscholarship-common</artifactId>
