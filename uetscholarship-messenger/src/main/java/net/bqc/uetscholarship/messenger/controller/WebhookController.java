@@ -48,12 +48,6 @@ public class WebhookController {
 	
 	private JsonMapper jsonMapper = new DefaultJsonMapper();
 
-	@PostConstruct
-	public void init() {
-		System.out.println("WH is initialized");
-		System.out.println("messengerService: " + messengerService);
-	}
-
 	@RequestMapping(value="/webhook", method=RequestMethod.GET)
 	public String validate(Model model,
 			@RequestParam(value="hub.challenge") String challenge,

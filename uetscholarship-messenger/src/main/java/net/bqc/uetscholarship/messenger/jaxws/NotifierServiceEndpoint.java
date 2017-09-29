@@ -16,22 +16,16 @@ import com.shirwa.simplistic_rss.RssItem;
 import net.bqc.uetscholarship.messenger.dao.UserDao;
 import net.bqc.uetscholarship.messenger.model.User;
 import net.bqc.uetscholarship.messenger.service.MessengerService;
+import net.bqc.uetscholarship.service.NotifierService;
 
 @WebService(serviceName = "NotifierService", portName = "NotifierPort")
-public class NotifierServiceEndpoint extends SpringBeanAutowiringSupport {
+public class NotifierServiceEndpoint extends SpringBeanAutowiringSupport implements NotifierService {
 
     @Autowired
     private MessengerService messengerService;
 
     @Autowired
     private UserDao userDao;
-
-    @PostConstruct
-    public void init() {
-        System.out.println("WS is initialized");
-        System.out.println("messengerService: " + messengerService);
-        System.out.println("userDao: " + userDao);
-    }
 
     @WebMethod
     public boolean notify(RssItem item) {
