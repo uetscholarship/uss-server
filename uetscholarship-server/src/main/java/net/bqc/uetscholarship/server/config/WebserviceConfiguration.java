@@ -13,7 +13,7 @@ import net.bqc.uetscholarship.service.NotifierService;
 @Configuration
 public class WebserviceConfiguration {
 
-    @Value("${messenger.service.address}")
+    @Value("${ws.notifier}")
     private String serviceAddress;
 
     @Bean
