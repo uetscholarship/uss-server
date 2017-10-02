@@ -35,7 +35,7 @@ public class RetrieveNewsTask {
 			}
 			
 			// only notify user when system has non-null latest post
-			if (latestLink != null || true) {
+			if (latestLink != null) {
 				notify(latestItems);
 			}
 			
