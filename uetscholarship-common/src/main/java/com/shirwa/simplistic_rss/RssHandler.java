@@ -26,11 +26,14 @@ import java.util.List;
 
 
 public class RssHandler extends DefaultHandler {
+
     private List<RssItem> rssItemList;
     private RssItem currentItem;
     private boolean parsingTitle;
     private boolean parsingLink;
     private boolean parsingDescription;
+
+    private StringBuilder titleChars = new StringBuilder();
 
     public RssHandler() {
         //Initializes a new ArrayList that will hold all the generated RSS items.
@@ -47,8 +50,10 @@ public class RssHandler extends DefaultHandler {
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
         if (qName.equals("item"))
             currentItem = new RssItem();
-        else if (qName.equals("title"))
+        else if (qName.equals("title")) {
+            titleChars.setLength(0);
             parsingTitle = true;
+        }
         else if (qName.equals("link"))
             parsingLink = true;
         else if (qName.equals("description"))
@@ -66,8 +71,11 @@ public class RssHandler extends DefaultHandler {
             //End of an item so add the currentItem to the list of items.
             rssItemList.add(currentItem);
             currentItem = null;
-        } else if (qName.equals("title"))
+        } else if (qName.equals("title")) {
+            if (currentItem != null)
+                currentItem.setTitle(titleChars.toString());
             parsingTitle = false;
+        }
         else if (qName.equals("link"))
             parsingLink = false;
         else if (qName.equals("description"))
@@ -80,7 +88,7 @@ public class RssHandler extends DefaultHandler {
         if (currentItem != null) {
             //If parsingTitle is true, then that means we are inside a <title> tag so the text is the title of an item.
             if (parsingTitle)
-                currentItem.setTitle(new String(ch, start, length));
+                titleChars.append(ch, start, length);
                 //If parsingLink is true, then that means we are inside a <link> tag so the text is the link of an item.
             else if (parsingLink)
                 currentItem.setLink(new String(ch, start, length));
