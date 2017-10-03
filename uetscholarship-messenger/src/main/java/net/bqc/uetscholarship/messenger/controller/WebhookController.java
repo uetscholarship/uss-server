@@ -3,8 +3,6 @@ package net.bqc.uetscholarship.messenger.controller;
 import java.util.List;
 import java.util.Locale;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
@@ -102,10 +100,14 @@ public class WebhookController {
 		boolean newUser = userDao.insert(user);
 		
 		if (!newUser) userDao.updateSubStatus(userId, true);
-		
+		String representativeName = user.getFirstName() == null ? "Stranger" : user.getFirstName();
+
 		// notify
 		messengerService.sendTextMessage(userId,
 				messageSource.getMessage("wh.subscribe.success", null, Locale.ENGLISH));
+		messengerService.sendTextMessage(userId,
+				messageSource.getMessage("wh.subscribe.compliment",
+						new Object[] { representativeName }, Locale.ENGLISH));
 	}
 	
 	private void processUnknownMessage(String userId) {
