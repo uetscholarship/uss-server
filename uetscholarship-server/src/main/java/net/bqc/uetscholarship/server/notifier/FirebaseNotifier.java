@@ -18,13 +18,13 @@ public class FirebaseNotifier implements INotifier {
 	
 	private static final Logger logger = LoggerFactory.getLogger(FirebaseNotifier.class);
 
-	@Value("${fcm_api_url}")
+	@Value("${fcm.api.url}")
 	private String FCM_API_URL;
 	
-	@Value("${fcm_topic_path}")
+	@Value("${fcm.topic.path}")
 	private String TOPIC_PATH;
 
-	@Value("${fcm_api_key}")
+	@Value("${fcm.api.key}")
 	private String FCM_API_KEY;
 
 	@Override

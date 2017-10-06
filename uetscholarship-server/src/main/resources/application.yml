@@ -1,0 +1,15 @@
+server:
+  port: 9999
+
+fcm:
+  api:
+    url: https://fcm.googleapis.com/fcm/send
+    key: ${USS_SERVER_FCM_API_KEY}
+  topic:
+    path: /topics/scholarships
+
+
+messenger:
+  server: ${USS_MESSENGER_SERVER}
+ws:
+  notifier: ${messenger.server}/services/Notifier
