@@ -29,7 +29,7 @@ public class MessengerService {
 	public static final String QR_SUBSCRIBE_PAYLOAD = "SUBSCRIBED_TO_RECIEVE_NEWS";
 	public static final String QR_CANCEL_PAYLOAD = "CANCEL_TO_RECIEVE_NEWS";
 	
-	@Value("${fb_page_token}")
+	@Value("${fb.page.token}")
 	private String PAGE_TOKEN;
 	
 	@Autowired

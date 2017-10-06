@@ -34,7 +34,7 @@ public class WebhookController {
 	@Autowired
 	private MessageSource messageSource;
 
-	@Value("${webhook_token}")
+	@Value("${webhook.token}")
 	private String webhookToken;
 	
 	@Autowired
