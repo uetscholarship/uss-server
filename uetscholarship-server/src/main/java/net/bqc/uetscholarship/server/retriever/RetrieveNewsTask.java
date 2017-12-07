@@ -15,7 +15,7 @@ import net.bqc.uetscholarship.server.notifier.MessengerNotifier;
 @Component
 public class RetrieveNewsTask {
 
-	private static final String FEED_URL = "https://uet.vnu.edu.vn/category/tin-tuc/tin-sinh-vien/feed";
+	private static final String FEED_URL = "http://uet.vnu.edu.vn/category/tin-tuc/tin-sinh-vien/feed";
 	
 	@Autowired
 	private FirebaseNotifier firebaseNotifier;
