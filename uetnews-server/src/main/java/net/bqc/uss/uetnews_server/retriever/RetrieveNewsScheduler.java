@@ -21,8 +21,8 @@ public class RetrieveNewsScheduler {
 	private RetrieveNewsTask retrieveNewsTask;
 
 	// every 30 minutes from 6h to 18h, Monday to Friday
-//	@Scheduled(cron = "0 */30 6-18 * * MON-FRI", zone = "GMT+7")
-	@Scheduled(cron = "*/30 * * * * *", zone = "GMT+7")
+	@Scheduled(cron = "0 */30 6-18 * * MON-FRI", zone = "GMT+7")
+//	@Scheduled(cron = "*/30 * * * * *", zone = "GMT+7")
 	public void retrieve() {
 		this.latestLink = retrieveNewsTask.call(this.latestLink);
 		logger.info("[{}] Retrieved latest news: {}", dateFormat.format(new Date()), this.latestLink);
