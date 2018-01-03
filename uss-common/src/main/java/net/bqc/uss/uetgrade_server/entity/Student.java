@@ -13,8 +13,7 @@ public class Student {
     @Column(name = "student_id")
     private Integer id;
 
-    @Id
-    @Column(name = "student_code")
+    @Column(name = "student_code", unique = true)
     private String code;
 
     @Column(name = "student_name")
@@ -23,8 +22,8 @@ public class Student {
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(
             name = "student_course",
-            joinColumns = @JoinColumn(name = "student_id", insertable = false, updatable = false),
-            inverseJoinColumns = @JoinColumn(name = "course_id", insertable = false, updatable = false)
+            joinColumns = @JoinColumn(name = "student_id", insertable = false, nullable = false, updatable = false),
+            inverseJoinColumns = @JoinColumn(name = "course_id", insertable = false, nullable = false, updatable = false)
     )
     private Set<Course> courses = new HashSet<>();
 
