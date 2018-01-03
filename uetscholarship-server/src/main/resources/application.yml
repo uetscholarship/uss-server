@@ -8,6 +8,9 @@ fcm:
   topic:
     path: /topics/scholarships
 
+uet:
+  feed:
+    url: https://uet.vnu.edu.vn/category/tin-tuc/tin-sinh-vien/feed
 
 messenger:
   server: ${USS_MESSENGER_SERVER}

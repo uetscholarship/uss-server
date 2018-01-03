@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.shirwa.simplistic_rss.RssItem;
@@ -15,7 +16,8 @@ import net.bqc.uetscholarship.server.notifier.MessengerNotifier;
 @Component
 public class RetrieveNewsTask {
 
-	private static final String FEED_URL = "http://uet.vnu.edu.vn/category/tin-tuc/tin-sinh-vien/feed";
+	@Value("${uet.feed.url}")
+	private String FEED_URL;
 	
 	@Autowired
 	private FirebaseNotifier firebaseNotifier;
