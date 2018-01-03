@@ -1,6 +1,8 @@
 uet:
   grade:
     host: http://112.137.129.30/viewgrade
+    term.code: 1
+    education.type: 0
     account:
       username: ${UET_GRADE_USERNAME}
       password: ${UET_GRADE_PASSWORD}
@@ -10,3 +12,7 @@ messenger:
   server: ${USS_MESSENGER_SERVER}
 ws:
   notifier: ${messenger.server}/services/Notifier
+
+logging:
+  level:
+    net.bqc.uss: DEBUG
