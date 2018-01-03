@@ -40,13 +40,14 @@ public class RetrieveGradeTask {
     private Map<String, String> cookies;
     private String token;
 
-    public void run() {
+    public String run() {
         try {
             login();
-            getGrades();
+            return getGrades();
         }
         catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
     }
 
@@ -83,7 +84,7 @@ public class RetrieveGradeTask {
     }
 
     public String getGrades() throws IOException {
-        // prepare parameters map for login form
+        // prepare parameters
         Map<String, String> formParams = new HashMap<>();
         formParams.put("_token", this.token);
         formParams.put("term", termCode);
@@ -96,8 +97,6 @@ public class RetrieveGradeTask {
                 .method(Connection.Method.POST)
                 .ignoreContentType(true)
                 .execute();
-
-        logger.debug(gradesResponse.body());
 
         return gradesResponse.body();
     }

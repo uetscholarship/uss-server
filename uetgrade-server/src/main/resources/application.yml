@@ -7,6 +7,13 @@ uet:
       username: ${UET_GRADE_USERNAME}
       password: ${UET_GRADE_PASSWORD}
 
+spring:
+  jpa.hibernate.ddl-auto: create
+  jpa.show-sql: true
+  datasource:
+    url: jdbc:mysql://localhost:3306/uetgrade
+    username: ${UET_GRADE_DB_USERNAME}
+    password: ${UET_GRADE_DB_PASSWORD}
 
 messenger:
   server: ${USS_MESSENGER_SERVER}
