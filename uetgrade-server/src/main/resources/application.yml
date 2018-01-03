@@ -1,0 +1,12 @@
+uet:
+  grade:
+    host: http://112.137.129.30/viewgrade
+    account:
+      username: ${UET_GRADE_USERNAME}
+      password: ${UET_GRADE_PASSWORD}
+
+
+messenger:
+  server: ${USS_MESSENGER_SERVER}
+ws:
+  notifier: ${messenger.server}/services/Notifier
