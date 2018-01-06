@@ -53,7 +53,9 @@ public class UetGradeServiceEndpoint extends SpringBeanAutowiringSupport impleme
             Student student = studentRepository.findByCode(studentCode);
             if (student != null) {
                 Set<Course> gradedCourses = student.getCourses().stream()
-                        .filter(course -> course.getGradeUrl() != null)
+                        .filter(course -> {
+                            course.setStudents(null);
+                            return course.getGradeUrl() != null; })
                         .collect(Collectors.toSet());
                 student.setCourses(gradedCourses);
                 return student;

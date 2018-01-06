@@ -25,7 +25,7 @@ public class Student {
     @Type(type = "org.hibernate.type.NumericBooleanType")
     private boolean isSubscribed = true; // default true on the first save to db
 
-    @ManyToMany(cascade = CascadeType.MERGE)
+    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     @JoinTable(
             name = "student_course",
             joinColumns = @JoinColumn(name = "student_id", insertable = false, nullable = false, updatable = false),
