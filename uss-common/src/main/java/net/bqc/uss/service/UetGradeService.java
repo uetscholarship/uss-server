@@ -9,5 +9,5 @@ public interface UetGradeService {
 
     boolean subscribeGrade(String studentCode);
     boolean unsubscribeGrade(String studentCode);
-    Student getStudentWithGradedCourse(String studentCode);
+    Student getStudentWithAllCourses(String studentCode);
 }

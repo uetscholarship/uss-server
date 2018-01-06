@@ -1,9 +1,12 @@
 package net.bqc.uss.messenger.service;
 
+import java.util.List;
 import java.util.Locale;
 
 import javax.annotation.PostConstruct;
 
+import com.restfb.types.send.*;
+import net.bqc.uss.uetgrade_server.entity.Student;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
@@ -13,22 +16,19 @@ import com.restfb.FacebookClient;
 import com.restfb.Parameter;
 import com.restfb.Version;
 import com.restfb.types.User;
-import com.restfb.types.send.Bubble;
-import com.restfb.types.send.GenericTemplatePayload;
-import com.restfb.types.send.IdMessageRecipient;
-import com.restfb.types.send.Message;
-import com.restfb.types.send.PostbackButton;
-import com.restfb.types.send.QuickReply;
-import com.restfb.types.send.SendResponse;
-import com.restfb.types.send.TemplateAttachment;
-import com.restfb.types.send.WebButton;
 
 @Service
 public class MessengerService {
-	
-	public static final String QR_SUBSCRIBE_PAYLOAD = "SUBSCRIBED_TO_RECIEVE_NEWS";
-	public static final String QR_CANCEL_PAYLOAD = "CANCEL_TO_RECIEVE_NEWS";
-	
+
+	public static final String MN_NEWS_SUBSCRIPTION_PAYLOAD = "MN_NEWS_SUBSCRIPTION_PAYLOAD";
+	public static final String QR_SUBSCRIBE_NEWS_PAYLOAD = "QR_SUBSCRIBE_NEWS_PAYLOAD";
+	public static final String QR_UNSUBSCRIBE_NEWS_PAYLOAD = "QR_UNSUBSCRIBE_NEWS_PAYLOAD";
+
+	public static final String MN_GRADE_SUBSCRIPTION_PAYLOAD = "MN_GRADE_SUBSCRIPTION_PAYLOAD";
+	public static final String QR_SUBSCRIBE_GRADE_PAYLOAD = "QR_SUBSCRIBE_GRADE_PAYLOAD";
+	public static final String QR_GET_GRADES_PAYLOAD = "QR_GET_GRADES_PAYLOAD";
+	public static final String BTN_UNSUBSCRIBE_GRADE_PAYLOAD = "BTN_UNSUBSCRIBE_GRADE_PAYLOAD";
+
 	@Value("${fb.page.token}")
 	private String PAGE_TOKEN;
 	
@@ -58,29 +58,69 @@ public class MessengerService {
 		sendMessage(recipient, txtMessage);
 	}
 	
-	public void sendSubscriptionMessage(String recipient, boolean isSubscribed) {
-		Message message = new Message(messageSource.getMessage("wh.nothing", null, Locale.ENGLISH));
+	public void sendNewsSubscriptionStatus(String recipient, boolean isSubscribed) {
+		Message message = new Message(getMessage("text.nothing", null));
 		QuickReply quickreply;
 		
 		if (isSubscribed) {
-			quickreply = new QuickReply(messageSource.getMessage("messenger.cancel", null, Locale.ENGLISH),
-					QR_CANCEL_PAYLOAD);
+			quickreply = new QuickReply(getMessage("news.qr.unsub", null),
+					QR_UNSUBSCRIBE_NEWS_PAYLOAD);
 		}
 		else {
-			quickreply= new QuickReply(messageSource.getMessage("messenger.subscribe", null, Locale.ENGLISH),
-					QR_SUBSCRIBE_PAYLOAD);
+			quickreply= new QuickReply(getMessage("news.qr.sub", null),
+					QR_SUBSCRIBE_NEWS_PAYLOAD);
 		}
 		
 		message.addQuickReply(quickreply);
 		sendMessage(recipient, message);
 	}
+
+	public void sendGradeSubscriptionStatus(String recipient, List<String> subscribedStudentCodes) {
+		if (subscribedStudentCodes.size() == 0) {
+			Message message = new Message(getMessage("grade.text.status.empty", null));
+			QuickReply quickReply = new QuickReply(
+					getMessage("grade.qr.sub", null),
+					QR_SUBSCRIBE_GRADE_PAYLOAD);
+			message.addQuickReply(quickReply);
+			sendMessage(recipient, message);
+		}
+		else {
+			// sendTextMessage(recipient, getMessage("grade.text.status.not_empty", null));
+			sendMessage(recipient, buildGradeSubscriptionInfoMessage(subscribedStudentCodes));
+		}
+	}
+
+	public Message buildGradeSubscriptionInfoMessage(List<String> studentCodes) {
+		GenericTemplatePayload payload = new GenericTemplatePayload();
+		TemplateAttachment attachment = new TemplateAttachment(payload);
+		// quick replies to get all grades for all student codes
+		QuickReply qrGetGrades = new QuickReply(
+				getMessage("grade.qr.get_grades", null),
+				QR_GET_GRADES_PAYLOAD);
+		QuickReply qrSubscribeMoreGrade = new QuickReply(
+				getMessage("grade.qr.sub", null),
+				QR_SUBSCRIBE_GRADE_PAYLOAD);
+
+		studentCodes.stream().forEach(studentCode -> {
+			Bubble bubble = new Bubble(getMessage("grade.std.title", null));
+			bubble.setSubtitle(getMessage("grade.std.content", null) + " " + studentCode); // MSSV: 1402xxxx
+			PostbackButton postbackButton = new PostbackButton(getMessage("grade.btn.unsub", null),
+					BTN_UNSUBSCRIBE_GRADE_PAYLOAD + "_" + studentCode); // Payload will be: BTN_UNSUBSCRIBE_GRADE_PAYLOAD_1402xxxx
+			bubble.addButton(postbackButton);
+			payload.addBubble(bubble);
+		});
+
+		Message message = new Message(attachment);
+		message.addQuickReply(qrGetGrades);
+		message.addQuickReply(qrSubscribeMoreGrade);
+		return message;
+	}
 	
 	public Message buildNewsMessage(String title, String link) {
-		Bubble bubble = new Bubble(messageSource.getMessage("news.title", null, Locale.ENGLISH));
+		Bubble bubble = new Bubble(getMessage("news.title", null));
 		bubble.setSubtitle(title);
 		
-		WebButton button = new WebButton(
-				messageSource.getMessage("news.read", null, Locale.ENGLISH), link);
+		WebButton button = new WebButton(getMessage("news.read", null), link);
 		
 		bubble.addButton(button);
 		GenericTemplatePayload payload = new GenericTemplatePayload();
@@ -108,5 +148,30 @@ public class MessengerService {
 	
 	public static Message buildTextMessage(String text) {
 		return new Message(text);
+	}
+
+	private String getMessage(String key, Object[] objects) {
+		return messageSource.getMessage(key, objects, Locale.ENGLISH);
+	}
+
+	public void sendCoursesList(String recipient, Student student) {
+		// else if uetgrade-server responses courses with grades, notify to user
+		GenericTemplatePayload payload = new GenericTemplatePayload();
+		TemplateAttachment attachment = new TemplateAttachment(payload);
+		student.getCourses().stream().forEach(course -> {
+			Bubble bubble = new Bubble(course.getName()); // maximum characters for title is 80
+			if (course.getGradeUrl() != null) {
+				bubble.setSubtitle(getMessage("grade.course.subtitle", null) + " " + course.getCode());
+				WebButton button = new WebButton(getMessage("grade.course.read", null), course.getGradeUrl());
+				bubble.addButton(button);
+			}
+			else {
+				bubble.setSubtitle(getMessage("grade.course.has_no_grade", null));
+			}
+			payload.addBubble(bubble);
+		});
+
+		Message message = new Message(attachment);
+		sendMessage(recipient, message);
 	}
 }

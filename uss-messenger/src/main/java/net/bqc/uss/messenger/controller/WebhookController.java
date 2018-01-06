@@ -3,9 +3,13 @@ package net.bqc.uss.messenger.controller;
 import java.util.List;
 import java.util.Locale;
 
+import com.restfb.types.send.Message;
+import com.restfb.types.webhook.messaging.PostbackItem;
+import net.bqc.uss.messenger.dao.GradeSubscriberDaoImpl;
 import net.bqc.uss.messenger.dao.UserDao;
 import net.bqc.uss.messenger.model.User;
 import net.bqc.uss.messenger.service.MessengerService;
+import net.bqc.uss.uetgrade_server.entity.Student;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
@@ -38,6 +42,9 @@ public class WebhookController {
 	
 	@Autowired
 	private UserDao userDao;
+
+	@Autowired
+	private GradeSubscriberDaoImpl gradeSubscriberDao;
 	
 	private JsonMapper jsonMapper = new DefaultJsonMapper();
 
@@ -58,36 +65,197 @@ public class WebhookController {
 			for (MessagingItem messagingItem : messagingItems) {
 				String userId = messagingItem.getSender().getId();
 				QuickReplyItem qrItem = messagingItem.getMessage().getQuickReply();
-				
-				if (qrItem != null) {
-					String postBack = qrItem.getPayload();
-					if (MessengerService.QR_SUBSCRIBE_PAYLOAD.equals(postBack)) {
-						processSubscribeMessage(userId);
-					}
-					else if (MessengerService.QR_CANCEL_PAYLOAD.equals(postBack)) {
-						processCancelMessage(userId);
-					}
+				PostbackItem postbackItem = messagingItem.getPostback();
+				String text = messagingItem.getMessage().getText();
+
+				if (qrItem != null || postbackItem != null) { // postback
+					String payload = (qrItem != null) ? qrItem.getPayload() : postbackItem.getPayload();
+					processPostback(payload, userId);
+				}
+				else if (text != null && text.matches("^#[Dd][Kk] \\d{8}$")) { // #DK 14020000
+				    processSubscribeGradeMessage(userId, text);
 				}
 				else {
-					processUnknownMessage(userId);
-				}
+                    processUnknownMessage(userId);
+                }
 			}
-			return new ResponseEntity<String>("success", HttpStatus.OK);
+			return new ResponseEntity<>("success", HttpStatus.OK);
 		}
 		catch(Exception e) {
 			e.printStackTrace();
-			return new ResponseEntity<String>("error", HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<>("error", HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
-	private void processCancelMessage(String userId) {
-		// remove from database
-		userDao.updateSubStatus(userId, false);
-		messengerService.sendTextMessage(userId,
-				messageSource.getMessage("wh.subscribe.cancel", null, Locale.ENGLISH));
+	private void processPostback(String payload, String userId) {
+		if (MessengerService.QR_SUBSCRIBE_NEWS_PAYLOAD.equals(payload)) {
+			processSubscribeNewsMessage(userId);
+		}
+		else if (MessengerService.QR_UNSUBSCRIBE_NEWS_PAYLOAD.equals(payload)) {
+			processUnSubscribeNewsMessage(userId);
+		}
+		else if (MessengerService.QR_SUBSCRIBE_GRADE_PAYLOAD.equals(payload)) {
+			processReqSubscribeGradeMessage(userId);
+		}
+		else if (payload != null && payload.startsWith(MessengerService.QR_SUBSCRIBE_GRADE_PAYLOAD)) {
+			processUnsubscribeGradeMessage(userId, payload);
+		}
+		else if (MessengerService.QR_GET_GRADES_PAYLOAD.equals(payload)) {
+			processReqGetAllGradesMessage(userId);
+		}
+		else if (MessengerService.MN_GRADE_SUBSCRIPTION_PAYLOAD.equals(payload)) {
+			processMenuGradeSubscriptionMessage(userId);
+		}
+		else if (MessengerService.MN_NEWS_SUBSCRIPTION_PAYLOAD.equals(payload)) {
+			processMenuNewsSubscriptionMessage(userId);
+		}
 	}
 
-	private void processSubscribeMessage(String userId) {
+	private void processReqGetAllGradesMessage(String userId) {
+		// get all student codes of userId in grade_subscribers
+		// get grades for all student codes from uetgrade-server
+		//		if uetgrade-server responses not found student code, notify system is processing
+        //      else if uetgrade-server responses not found course for student code, notify this student has no courses
+        //		else send grades as list for user
+		List<String> studentCodes = gradeSubscriberDao.findStudentCodesBySubscriber(userId);
+		studentCodes.stream().forEach(studentCode -> {
+			Student student = null; // TODO: get all students (included all courses)
+
+			if (student == null) {
+				messengerService.sendTextMessage(userId,
+						getMessage("grade.text.std.current_processing", new Object[] { studentCode }));
+			}
+			else if (student.getCourses().size() == 0) {
+				messengerService.sendTextMessage(userId,
+                        getMessage("grade.text.std.no_course", new Object[] { studentCode }));
+			}
+			else {
+			    // notify number of courses have grades
+                long gradedCoursesCount = student.getCourses().stream()
+                        .filter(course -> course.getGradeUrl() != null)
+                        .count();
+
+                messengerService.sendTextMessage(userId,
+                        getMessage(
+                                "grade.text.std.has_course",
+                                new Object[] {
+                                    studentCode,
+                                    gradedCoursesCount,
+                                    student.getCourses().size()}));
+
+                // send course list
+                messengerService.sendCoursesList(userId, student);
+            }
+
+		});
+
+	}
+
+	private void processUnsubscribeGradeMessage(String userId, String payload) {
+		// get student code from postback if student dont match pattern notify error else
+		// remove from grade_subscribers
+		// check if there's no subscriber of that student code, send unsubscribe to uetgrade-server
+		// send text message to user, notify unsub successfully
+		String[] payloadPieces = payload.split("_");
+		String studentCode = payloadPieces[payloadPieces.length - 1];
+		if (!studentCode.matches("\\d{8}")) {
+            Message errorMessage = messengerService.buildGenericMessage(
+                    getMessage("text.title.warning", null),
+                    getMessage("text.err", null),
+                    null, null);
+            messengerService.sendMessage(userId, errorMessage);
+		}
+		else {
+			gradeSubscriberDao.deleteSubscriber(userId, studentCode);
+			List<String> subscribers = gradeSubscriberDao.findSubscribersByStudentCode(studentCode);
+			if (subscribers.size() == 0) {
+				// TODO: send unsubscribe message for uetgrade-server
+			}
+			messengerService.sendTextMessage(userId,
+					getMessage("grade.text.unsub.success", new Object[] { studentCode }));
+		}
+
+	}
+
+	private void processReqSubscribeGradeMessage(String userId) {
+		// ask user to enter student code for subscription
+        Message message = messengerService.buildGenericMessage(
+                getMessage("grade.ask_student_code.title", null),
+                getMessage("grade.ask_student_code.subtitle", null),
+                null, null);
+        messengerService.sendMessage(userId, message);
+	}
+
+	private void processSubscribeGradeMessage(String userId, String textMessage) {
+        Message message;
+
+        // get student code from textMessage
+        String[] payloadPieces = textMessage.split(" ");
+        String studentCode = payloadPieces[payloadPieces.length - 1];
+        // need validate for student code, maybe in case white characters is not expected (not space) :(
+        if (!studentCode.matches("\\d{8}")) {
+            message = messengerService.buildGenericMessage(
+                    getMessage("text.title.warning", null),
+                    getMessage("text.err", null),
+                    null, null);
+        }
+        else {
+            // check if pair (userId, studentCode) existed in grade_subscribers
+            List<String> studentCodes = gradeSubscriberDao.findStudentCodesBySubscriber(userId);
+            if (studentCodes.contains(studentCode)) {
+                message = messengerService.buildGenericMessage(
+                        getMessage("text.title.fail", null),
+                        getMessage("grade.text.has_already_sub", new Object[] { studentCode }),
+                        null, null);
+            }
+            else {
+                // request subscribe to uetgrade-server for that student code
+                // if uetgrade-server return true, notify success, and insert into grade_subscribers
+                // 		else notify fail
+                // TODO: request subscribe to uetgrade-server for that student code
+                boolean result = true;
+                if (result) { // success
+                    gradeSubscriberDao.insertSubscriber(userId, studentCode);
+                    message = messengerService.buildGenericMessage(
+                            getMessage("text.title.success", null),
+                            getMessage("grade.text.sub.success", new Object[] { studentCode }),
+                            null, null);
+                }
+                else { // fail
+                    message = messengerService.buildGenericMessage(
+                            getMessage("text.title.fail", null),
+                            getMessage("grade.text.sub.fail", null),
+                            null, null);
+                }
+            }
+        }
+        // send subscribe result message
+        messengerService.sendMessage(userId, message);
+    }
+
+	private void processMenuNewsSubscriptionMessage(String userId) {
+		User user = userDao.findByFbId(userId);
+		boolean isSubscribed = (user == null) ? false : user.isSubscribed();
+		messengerService.sendNewsSubscriptionStatus(userId, isSubscribed);
+	}
+
+	private void processMenuGradeSubscriptionMessage(String userId) {
+		List<String> studentCodes = gradeSubscriberDao.findStudentCodesBySubscriber(userId);
+		messengerService.sendGradeSubscriptionStatus(userId, studentCodes);
+	}
+
+	private void processUnSubscribeNewsMessage(String userId) {
+		// remove from database
+		userDao.updateSubStatus(userId, false);
+
+        Message successMessage = messengerService.buildGenericMessage(
+                getMessage("text.title.success", null),
+                getMessage("news.text.unsub.success", null),
+                null, null);
+        messengerService.sendMessage(userId, successMessage);
+	}
+
+	private void processSubscribeNewsMessage(String userId) {
 		// fetch user info
 		com.restfb.types.User fbUser = messengerService.getUserInformation(userId);
 		
@@ -102,17 +270,20 @@ public class WebhookController {
 		String representativeName = user.getFirstName() == null ? "Stranger" : user.getFirstName();
 
 		// notify
+        Message successMessage = messengerService.buildGenericMessage(
+                getMessage("text.title.fail", null),
+                getMessage("news.text.sub.success", null),
+                null, null);
+        messengerService.sendMessage(userId, successMessage);
 		messengerService.sendTextMessage(userId,
-				messageSource.getMessage("wh.subscribe.success", null, Locale.ENGLISH));
-		messengerService.sendTextMessage(userId,
-				messageSource.getMessage("wh.subscribe.compliment",
-						new Object[] { representativeName }, Locale.ENGLISH));
+				getMessage("text.compliment", new Object[] { representativeName }));
 	}
 	
 	private void processUnknownMessage(String userId) {
-		// send quick reply message
-		User user = userDao.findByFbId(userId);
-		boolean isSubscribed = (user == null) ? false : user.isSubscribed();
-		messengerService.sendSubscriptionMessage(userId, isSubscribed);
+		messengerService.sendTextMessage(userId, getMessage("text.nothing", null));
+	}
+
+	private String getMessage(String key, Object[] objects) {
+		return messageSource.getMessage(key, objects, Locale.ENGLISH);
 	}
 }

@@ -36,7 +36,7 @@ public class GradeSubscriberDaoImpl {
         }
     }
 
-    public boolean addSubscriber(String fbId, String studentCode) {
+    public boolean insertSubscriber(String fbId, String studentCode) {
         try {
             String sql = "INSERT INTO grade_subscribers (fb_id, student_code) VALUES (? , ?)";
             jdbcTemplate.update(sql, fbId, studentCode);

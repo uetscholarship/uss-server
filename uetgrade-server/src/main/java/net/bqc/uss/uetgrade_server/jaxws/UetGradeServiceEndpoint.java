@@ -47,17 +47,13 @@ public class UetGradeServiceEndpoint extends SpringBeanAutowiringSupport impleme
     }
 
     @Override
-    public Student getStudentWithGradedCourse(String studentCode) {
+    public Student getStudentWithAllCourses(String studentCode) {
         try {
             logger.debug("Request get graded courses for student: " + studentCode);
             Student student = studentRepository.findByCode(studentCode);
             if (student != null) {
-                Set<Course> gradedCourses = student.getCourses().stream()
-                        .filter(course -> {
-                            course.setStudents(null);
-                            return course.getGradeUrl() != null; })
-                        .collect(Collectors.toSet());
-                student.setCourses(gradedCourses);
+                // set students set null for each courses in order to prevent cyclic problem of JAXB
+                student.getCourses().stream().forEach(course -> course.setStudents(null));
                 return student;
             }
             return null;
