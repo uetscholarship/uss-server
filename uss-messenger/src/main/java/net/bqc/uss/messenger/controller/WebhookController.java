@@ -10,6 +10,8 @@ import net.bqc.uss.messenger.dao.UserDao;
 import net.bqc.uss.messenger.model.User;
 import net.bqc.uss.messenger.service.MyMessengerService;
 import net.bqc.uss.uetgrade_server.entity.Student;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
@@ -30,7 +32,10 @@ import com.restfb.types.webhook.messaging.QuickReplyItem;
 
 @RestController
 public class WebhookController {
-	
+
+	private static final Logger logger = LoggerFactory.getLogger(WebhookController.class);
+
+
 	@Autowired
 	private MyMessengerService myMessengerService;
 	
@@ -58,7 +63,7 @@ public class WebhookController {
 	
 	@RequestMapping(value="/webhook", method=RequestMethod.POST)
 	public ResponseEntity<String> receive(Model model, @RequestBody final String json) {
-		System.out.println("request=" + json);
+		logger.debug("Request: {}", json);
 		try {
 			WebhookObject data = jsonMapper.toJavaObject(json, WebhookObject.class);
 			List<MessagingItem> messagingItems = data.getEntryList().get(0).getMessaging();
