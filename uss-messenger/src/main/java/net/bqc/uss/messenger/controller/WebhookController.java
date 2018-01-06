@@ -284,7 +284,7 @@ public class WebhookController {
 
 		// notify
         Message successMessage = myMessengerService.buildGenericMessage(
-                getMessage("text.title.fail", null),
+                getMessage("text.title.success", null),
                 getMessage("news.text.sub.success", null),
                 null, null);
         myMessengerService.sendMessage(userId, successMessage);

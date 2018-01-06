@@ -4,7 +4,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+import net.bqc.uss.messenger.controller.WebhookController;
 import net.bqc.uss.messenger.model.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -12,6 +15,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public class UserDaoImpl implements UserDao {
+
+	private static final Logger logger = LoggerFactory.getLogger(UserDaoImpl.class);
 
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
@@ -25,7 +30,7 @@ public class UserDaoImpl implements UserDao {
 			return user;
 		}
 		catch (Exception e) {
-			e.printStackTrace();
+			logger.error(e.getMessage());
 			return null;
 		}
 	}
@@ -53,7 +58,7 @@ public class UserDaoImpl implements UserDao {
 			return true;
 		}
 		catch (Exception e) {
-			e.printStackTrace();
+			logger.error(e.getMessage());
 			return false;
 		}
 	}
@@ -65,7 +70,7 @@ public class UserDaoImpl implements UserDao {
 			jdbcTemplate.update(sql, status, fbId);
 		}
 		catch (Exception e) {
-			e.printStackTrace();
+			logger.error(e.getMessage());
 		}
 	}
 
