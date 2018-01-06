@@ -13,6 +13,7 @@
 	<modules>
 		<module>uss-common</module>
 		<module>uetnews-server</module>
+		<module>uetgrade-server</module>
 		<module>uss-messenger</module>
 	</modules>
 
