@@ -1,5 +1,7 @@
 package net.bqc.uss.uetgrade_server.entity;
 
+import org.hibernate.annotations.Type;
+
 import javax.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
@@ -19,7 +21,11 @@ public class Student {
     @Column(name = "student_name")
     private String name;
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @Column(name = "is_subscribed")
+    @Type(type = "org.hibernate.type.NumericBooleanType")
+    private boolean isSubscribed = true; // default true on the first save to db
+
+    @ManyToMany(cascade = CascadeType.MERGE)
     @JoinTable(
             name = "student_course",
             joinColumns = @JoinColumn(name = "student_id", insertable = false, nullable = false, updatable = false),
@@ -57,5 +63,13 @@ public class Student {
 
     public void setCourses(Set<Course> courses) {
         this.courses = courses;
+    }
+
+    public void setSubscribed(boolean subscribed) {
+        isSubscribed = subscribed;
+    }
+
+    public boolean isSubscribed() {
+        return isSubscribed;
     }
 }

@@ -11,15 +11,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.annotation.RequestScope;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 @Component
+@RequestScope
 public class RetrieveCourseTask {
 
     @Value("${uet.course.api}")
@@ -90,9 +90,5 @@ public class RetrieveCourseTask {
 
     public Student getStudent() {
         return student;
-    }
-
-    public Set<Course> getCourses() {
-        return courses;
     }
 }
