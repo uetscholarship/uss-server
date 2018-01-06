@@ -9,6 +9,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class UetGradeApplication {
 
     public static void main(String[] args) {
-        new SpringApplicationBuilder(UetGradeApplication.class).web(false).run(args);
+        new SpringApplicationBuilder(UetGradeApplication.class).run(args);
     }
 }
