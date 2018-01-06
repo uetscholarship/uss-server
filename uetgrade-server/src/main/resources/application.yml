@@ -9,6 +9,8 @@ uet:
     account:
       username: ${UET_GRADE_USERNAME}
       password: ${UET_GRADE_PASSWORD}
+  course:
+    api: https://112.137.129.87/congdaotao/module/dsthi_new/index.php?r=lopmonhoc/napmonthi
 
 spring:
   jpa:

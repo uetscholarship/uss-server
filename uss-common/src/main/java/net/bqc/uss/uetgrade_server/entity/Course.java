@@ -1,6 +1,7 @@
 package net.bqc.uss.uetgrade_server.entity;
 
 import javax.persistence.*;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -15,7 +16,7 @@ public class Course {
     @Column(name = "course_name")
     private String name;
 
-    @Column(name = "course_code")
+    @Column(name = "course_code", unique = true)
     private String code;
 
     @Column(name = "grade_url")
@@ -23,6 +24,14 @@ public class Course {
 
     @ManyToMany(mappedBy = "courses")
     private Set<Student> students;
+
+    public Course() {
+    }
+
+    public Course(String code, String name) {
+        this.name = name;
+        this.code = code;
+    }
 
     public Integer getId() {
         return id;
@@ -58,5 +67,29 @@ public class Course {
 
     public Set<Student> getStudents() {
         return students;
+    }
+
+    public void setStudents(Set<Student> students) {
+        this.students = students;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(code);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Course)) return false;
+        else if (o == this) return true;
+        else return this.code != null && this.code.equals(((Course)o).code);
+    }
+
+    @Override
+    public String toString() {
+        return "Course{" +
+                "name='" + name + '\'' +
+                ", code='" + code + '\'' +
+                '}';
     }
 }
