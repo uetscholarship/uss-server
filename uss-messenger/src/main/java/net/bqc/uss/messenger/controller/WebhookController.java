@@ -8,7 +8,7 @@ import com.restfb.types.webhook.messaging.PostbackItem;
 import net.bqc.uss.messenger.dao.GradeSubscriberDaoImpl;
 import net.bqc.uss.messenger.dao.UserDao;
 import net.bqc.uss.messenger.model.User;
-import net.bqc.uss.messenger.service.MessengerService;
+import net.bqc.uss.messenger.service.MyMessengerService;
 import net.bqc.uss.uetgrade_server.entity.Student;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,7 +32,7 @@ import com.restfb.types.webhook.messaging.QuickReplyItem;
 public class WebhookController {
 	
 	@Autowired
-	private MessengerService messengerService;
+	private MyMessengerService myMessengerService;
 	
 	@Autowired
 	private MessageSource messageSource;
@@ -88,25 +88,25 @@ public class WebhookController {
 	}
 
 	private void processPostback(String payload, String userId) {
-		if (MessengerService.QR_SUBSCRIBE_NEWS_PAYLOAD.equals(payload)) {
+		if (MyMessengerService.QR_SUBSCRIBE_NEWS_PAYLOAD.equals(payload)) {
 			processSubscribeNewsMessage(userId);
 		}
-		else if (MessengerService.QR_UNSUBSCRIBE_NEWS_PAYLOAD.equals(payload)) {
+		else if (MyMessengerService.QR_UNSUBSCRIBE_NEWS_PAYLOAD.equals(payload)) {
 			processUnSubscribeNewsMessage(userId);
 		}
-		else if (MessengerService.QR_SUBSCRIBE_GRADE_PAYLOAD.equals(payload)) {
+		else if (MyMessengerService.QR_SUBSCRIBE_GRADE_PAYLOAD.equals(payload)) {
 			processReqSubscribeGradeMessage(userId);
 		}
-		else if (payload != null && payload.startsWith(MessengerService.QR_SUBSCRIBE_GRADE_PAYLOAD)) {
+		else if (payload != null && payload.startsWith(MyMessengerService.QR_SUBSCRIBE_GRADE_PAYLOAD)) {
 			processUnsubscribeGradeMessage(userId, payload);
 		}
-		else if (MessengerService.QR_GET_GRADES_PAYLOAD.equals(payload)) {
+		else if (MyMessengerService.QR_GET_GRADES_PAYLOAD.equals(payload)) {
 			processReqGetAllGradesMessage(userId);
 		}
-		else if (MessengerService.MN_GRADE_SUBSCRIPTION_PAYLOAD.equals(payload)) {
+		else if (MyMessengerService.MN_GRADE_SUBSCRIPTION_PAYLOAD.equals(payload)) {
 			processMenuGradeSubscriptionMessage(userId);
 		}
-		else if (MessengerService.MN_NEWS_SUBSCRIPTION_PAYLOAD.equals(payload)) {
+		else if (MyMessengerService.MN_NEWS_SUBSCRIPTION_PAYLOAD.equals(payload)) {
 			processMenuNewsSubscriptionMessage(userId);
 		}
 	}
@@ -122,11 +122,11 @@ public class WebhookController {
 			Student student = null; // TODO: get all students (included all courses)
 
 			if (student == null) {
-				messengerService.sendTextMessage(userId,
+				myMessengerService.sendTextMessage(userId,
 						getMessage("grade.text.std.current_processing", new Object[] { studentCode }));
 			}
 			else if (student.getCourses().size() == 0) {
-				messengerService.sendTextMessage(userId,
+				myMessengerService.sendTextMessage(userId,
                         getMessage("grade.text.std.no_course", new Object[] { studentCode }));
 			}
 			else {
@@ -135,7 +135,7 @@ public class WebhookController {
                         .filter(course -> course.getGradeUrl() != null)
                         .count();
 
-                messengerService.sendTextMessage(userId,
+                myMessengerService.sendTextMessage(userId,
                         getMessage(
                                 "grade.text.std.has_course",
                                 new Object[] {
@@ -144,7 +144,7 @@ public class WebhookController {
                                     student.getCourses().size()}));
 
                 // send course list
-                messengerService.sendCoursesList(userId, student);
+                myMessengerService.sendCoursesList(userId, student);
             }
 
 		});
@@ -159,11 +159,11 @@ public class WebhookController {
 		String[] payloadPieces = payload.split("_");
 		String studentCode = payloadPieces[payloadPieces.length - 1];
 		if (!studentCode.matches("\\d{8}")) {
-            Message errorMessage = messengerService.buildGenericMessage(
+            Message errorMessage = myMessengerService.buildGenericMessage(
                     getMessage("text.title.warning", null),
                     getMessage("text.err", null),
                     null, null);
-            messengerService.sendMessage(userId, errorMessage);
+            myMessengerService.sendMessage(userId, errorMessage);
 		}
 		else {
 			gradeSubscriberDao.deleteSubscriber(userId, studentCode);
@@ -171,7 +171,7 @@ public class WebhookController {
 			if (subscribers.size() == 0) {
 				// TODO: send unsubscribe message for uetgrade-server
 			}
-			messengerService.sendTextMessage(userId,
+			myMessengerService.sendTextMessage(userId,
 					getMessage("grade.text.unsub.success", new Object[] { studentCode }));
 		}
 
@@ -179,11 +179,11 @@ public class WebhookController {
 
 	private void processReqSubscribeGradeMessage(String userId) {
 		// ask user to enter student code for subscription
-        Message message = messengerService.buildGenericMessage(
+        Message message = myMessengerService.buildGenericMessage(
                 getMessage("grade.ask_student_code.title", null),
                 getMessage("grade.ask_student_code.subtitle", null),
                 null, null);
-        messengerService.sendMessage(userId, message);
+        myMessengerService.sendMessage(userId, message);
 	}
 
 	private void processSubscribeGradeMessage(String userId, String textMessage) {
@@ -194,7 +194,7 @@ public class WebhookController {
         String studentCode = payloadPieces[payloadPieces.length - 1];
         // need validate for student code, maybe in case white characters is not expected (not space) :(
         if (!studentCode.matches("\\d{8}")) {
-            message = messengerService.buildGenericMessage(
+            message = myMessengerService.buildGenericMessage(
                     getMessage("text.title.warning", null),
                     getMessage("text.err", null),
                     null, null);
@@ -203,7 +203,7 @@ public class WebhookController {
             // check if pair (userId, studentCode) existed in grade_subscribers
             List<String> studentCodes = gradeSubscriberDao.findStudentCodesBySubscriber(userId);
             if (studentCodes.contains(studentCode)) {
-                message = messengerService.buildGenericMessage(
+                message = myMessengerService.buildGenericMessage(
                         getMessage("text.title.fail", null),
                         getMessage("grade.text.has_already_sub", new Object[] { studentCode }),
                         null, null);
@@ -216,13 +216,13 @@ public class WebhookController {
                 boolean result = true;
                 if (result) { // success
                     gradeSubscriberDao.insertSubscriber(userId, studentCode);
-                    message = messengerService.buildGenericMessage(
+                    message = myMessengerService.buildGenericMessage(
                             getMessage("text.title.success", null),
                             getMessage("grade.text.sub.success", new Object[] { studentCode }),
                             null, null);
                 }
                 else { // fail
-                    message = messengerService.buildGenericMessage(
+                    message = myMessengerService.buildGenericMessage(
                             getMessage("text.title.fail", null),
                             getMessage("grade.text.sub.fail", null),
                             null, null);
@@ -230,34 +230,34 @@ public class WebhookController {
             }
         }
         // send subscribe result message
-        messengerService.sendMessage(userId, message);
+        myMessengerService.sendMessage(userId, message);
     }
 
 	private void processMenuNewsSubscriptionMessage(String userId) {
 		User user = userDao.findByFbId(userId);
 		boolean isSubscribed = (user == null) ? false : user.isSubscribed();
-		messengerService.sendNewsSubscriptionStatus(userId, isSubscribed);
+		myMessengerService.sendNewsSubscriptionStatus(userId, isSubscribed);
 	}
 
 	private void processMenuGradeSubscriptionMessage(String userId) {
 		List<String> studentCodes = gradeSubscriberDao.findStudentCodesBySubscriber(userId);
-		messengerService.sendGradeSubscriptionStatus(userId, studentCodes);
+		myMessengerService.sendGradeSubscriptionStatus(userId, studentCodes);
 	}
 
 	private void processUnSubscribeNewsMessage(String userId) {
 		// remove from database
 		userDao.updateSubStatus(userId, false);
 
-        Message successMessage = messengerService.buildGenericMessage(
+        Message successMessage = myMessengerService.buildGenericMessage(
                 getMessage("text.title.success", null),
                 getMessage("news.text.unsub.success", null),
                 null, null);
-        messengerService.sendMessage(userId, successMessage);
+        myMessengerService.sendMessage(userId, successMessage);
 	}
 
 	private void processSubscribeNewsMessage(String userId) {
 		// fetch user info
-		com.restfb.types.User fbUser = messengerService.getUserInformation(userId);
+		com.restfb.types.User fbUser = myMessengerService.getUserInformation(userId);
 		
 		// insert to database
 		User user = new User();
@@ -270,17 +270,17 @@ public class WebhookController {
 		String representativeName = user.getFirstName() == null ? "Stranger" : user.getFirstName();
 
 		// notify
-        Message successMessage = messengerService.buildGenericMessage(
+        Message successMessage = myMessengerService.buildGenericMessage(
                 getMessage("text.title.fail", null),
                 getMessage("news.text.sub.success", null),
                 null, null);
-        messengerService.sendMessage(userId, successMessage);
-		messengerService.sendTextMessage(userId,
+        myMessengerService.sendMessage(userId, successMessage);
+		myMessengerService.sendTextMessage(userId,
 				getMessage("text.compliment", new Object[] { representativeName }));
 	}
 	
 	private void processUnknownMessage(String userId) {
-		messengerService.sendTextMessage(userId, getMessage("text.nothing", null));
+		myMessengerService.sendTextMessage(userId, getMessage("text.nothing", null));
 	}
 
 	private String getMessage(String key, Object[] objects) {

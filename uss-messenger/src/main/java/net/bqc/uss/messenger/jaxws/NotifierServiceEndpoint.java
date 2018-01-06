@@ -15,7 +15,7 @@ import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 import com.restfb.types.send.Message;
 import com.shirwa.simplistic_rss.RssItem;
 
-import net.bqc.uss.messenger.service.MessengerService;
+import net.bqc.uss.messenger.service.MyMessengerService;
 import net.bqc.uss.service.NotifierService;
 
 @WebService(serviceName = "NotifierService", portName = "NotifierPort",
@@ -26,7 +26,7 @@ public class NotifierServiceEndpoint extends SpringBeanAutowiringSupport impleme
 	private static final Logger logger = LoggerFactory.getLogger(NotifierServiceEndpoint.class);
 	
     @Autowired
-    private MessengerService messengerService;
+    private MyMessengerService myMessengerService;
 
     @Autowired
     private UserDao userDao;
@@ -37,13 +37,13 @@ public class NotifierServiceEndpoint extends SpringBeanAutowiringSupport impleme
 			logger.info("Receive news notification request: {}", item.getLink());
 			
 	        // build new message
-            Message message = messengerService.buildNewsMessage(
+            Message message = myMessengerService.buildNewsMessage(
                     item.getTitle(), item.getLink());
 
             // send to all subscribed users
             List<User> subscribedUsers = userDao.findAllSubscribedUsers();
             subscribedUsers.forEach(user -> {
-                messengerService.sendMessage(user.getFbId(), message);
+                myMessengerService.sendMessage(user.getFbId(), message);
             });
 
             return true;

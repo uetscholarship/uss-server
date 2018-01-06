@@ -18,7 +18,7 @@ import com.restfb.Version;
 import com.restfb.types.User;
 
 @Service
-public class MessengerService {
+public class MyMessengerService {
 
 	public static final String MN_NEWS_SUBSCRIPTION_PAYLOAD = "MN_NEWS_SUBSCRIPTION_PAYLOAD";
 	public static final String QR_SUBSCRIBE_NEWS_PAYLOAD = "QR_SUBSCRIBE_NEWS_PAYLOAD";
