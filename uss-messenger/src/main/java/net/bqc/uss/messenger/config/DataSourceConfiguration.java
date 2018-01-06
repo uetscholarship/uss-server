@@ -20,10 +20,10 @@ public class DataSourceConfiguration {
 
 	@Autowired
 	private Environment env;
-	
+
 	@Value("classpath:db/create-db.sql")
 	public Resource schemaScript;
-	
+
 	@Bean
 	public DataSource dataSource() {
 		DriverManagerDataSource dataSource = new DriverManagerDataSource();
@@ -31,12 +31,12 @@ public class DataSourceConfiguration {
 		dataSource.setUrl(env.getProperty("jdbc.url"));
 		dataSource.setUsername(env.getProperty("jdbc.username"));
 		dataSource.setPassword(env.getProperty("jdbc.password"));
-		
+
 		// add script
 		ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
 		populator.addScript(schemaScript);
 		DatabasePopulatorUtils.execute(populator, dataSource);
-		
+
 		return dataSource;
 	}
 }

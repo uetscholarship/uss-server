@@ -2,8 +2,11 @@ package net.bqc.uss.messenger.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import javax.persistence.Id;
+
 public class User {
 
+	@Id
 	private int id;
 	
 	@JsonProperty("fb_id")
