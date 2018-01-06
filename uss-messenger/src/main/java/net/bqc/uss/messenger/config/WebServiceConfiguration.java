@@ -19,7 +19,7 @@ import javax.xml.ws.Endpoint;
 @Configuration
 public class WebServiceConfiguration {
 
-    @Value("${ws.grade}")
+    @Value("${ws.uetgrade}")
     private String uetGradeServiceAddress;
 
     @Autowired
