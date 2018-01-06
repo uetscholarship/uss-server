@@ -102,8 +102,8 @@ public class MyMessengerService {
 				QR_SUBSCRIBE_GRADE_PAYLOAD);
 
 		studentCodes.stream().forEach(studentCode -> {
-			Bubble bubble = new Bubble(getMessage("grade.std.title", null));
-			bubble.setSubtitle(getMessage("grade.std.content", null) + " " + studentCode); // MSSV: 1402xxxx
+			Bubble bubble = new Bubble(getMessage("grade.std.title", new Object[] {studentCode }));  // MSSV: 1402xxxx
+			bubble.setSubtitle(getMessage("grade.std.content", null));
 			PostbackButton postbackButton = new PostbackButton(getMessage("grade.btn.unsub", null),
 					BTN_UNSUBSCRIBE_GRADE_PAYLOAD + "_" + studentCode); // Payload will be: BTN_UNSUBSCRIBE_GRADE_PAYLOAD_1402xxxx
 			bubble.addButton(postbackButton);

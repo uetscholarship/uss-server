@@ -85,7 +85,7 @@ public class WebhookController {
 					String payload = (qrItem != null) ? qrItem.getPayload() : postbackItem.getPayload();
 					processPostback(payload, userId);
 				}
-				else if (text != null && text.matches("^#[Dd][Kk] \\d{8}$")) { // #DK 14020000
+				else if (text != null && text.matches("^#[Dd][Kk].*")) { // #DKxxxxxxxxxxxxxx
 				    processSubscribeGradeMessage(userId, text);
 				}
 				else {
@@ -110,7 +110,7 @@ public class WebhookController {
 		else if (MyMessengerService.QR_SUBSCRIBE_GRADE_PAYLOAD.equals(payload)) {
 			processReqSubscribeGradeMessage(userId);
 		}
-		else if (payload != null && payload.startsWith(MyMessengerService.QR_SUBSCRIBE_GRADE_PAYLOAD)) {
+		else if (payload != null && payload.startsWith(MyMessengerService.BTN_UNSUBSCRIBE_GRADE_PAYLOAD)) {
 			processUnsubscribeGradeMessage(userId, payload);
 		}
 		else if (MyMessengerService.QR_GET_GRADES_PAYLOAD.equals(payload)) {
@@ -184,8 +184,11 @@ public class WebhookController {
 			if (subscribers.size() == 0) {
 				// TODO: send unsubscribe message for uetgrade-server
 			}
-			myMessengerService.sendTextMessage(userId,
-					getMessage("grade.text.unsub.success", new Object[] { studentCode }));
+            Message successMessage = myMessengerService.buildGenericMessage(
+                    getMessage("text.title.success", null),
+                    getMessage("grade.text.unsub.success", new Object[] { studentCode }),
+                    null, null);
+            myMessengerService.sendMessage(userId, successMessage);
 		}
 
 	}
@@ -207,10 +210,10 @@ public class WebhookController {
         String studentCode = payloadPieces[payloadPieces.length - 1];
         // need validate for student code, maybe in case white characters is not expected (not space) :(
         if (!studentCode.matches("\\d{8}")) {
-            message = myMessengerService.buildGenericMessage(
-                    getMessage("text.title.warning", null),
-                    getMessage("text.err", null),
-                    null, null);
+			message = myMessengerService.buildGenericMessage(
+					getMessage("text.title.fail", null),
+					getMessage("grade.text.sub.fail", null),
+					null, null);
         }
         else {
             // check if pair (userId, studentCode) existed in grade_subscribers
