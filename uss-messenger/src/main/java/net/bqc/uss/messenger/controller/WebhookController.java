@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Locale;
 
 import com.restfb.types.send.Message;
+import com.restfb.types.webhook.messaging.MessageItem;
 import com.restfb.types.webhook.messaging.PostbackItem;
 import net.bqc.uss.messenger.dao.GradeSubscriberDaoImpl;
 import net.bqc.uss.messenger.dao.UserDao;
@@ -69,9 +70,16 @@ public class WebhookController {
 			List<MessagingItem> messagingItems = data.getEntryList().get(0).getMessaging();
 			for (MessagingItem messagingItem : messagingItems) {
 				String userId = messagingItem.getSender().getId();
-				QuickReplyItem qrItem = messagingItem.getMessage().getQuickReply();
 				PostbackItem postbackItem = messagingItem.getPostback();
-				String text = messagingItem.getMessage().getText();
+
+				MessageItem messageItem = messagingItem.getMessage();
+				QuickReplyItem qrItem = null;
+				String text = null;
+
+				if (messageItem != null) {
+					qrItem = messageItem.getQuickReply();
+					text = messageItem.getText();
+				}
 
 				if (qrItem != null || postbackItem != null) { // postback
 					String payload = (qrItem != null) ? qrItem.getPayload() : postbackItem.getPayload();

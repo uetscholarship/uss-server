@@ -13,3 +13,7 @@ uetgrade:
 
 ws:
   uetgrade: ${uetgrade.server}/services/UetGrade
+
+logging:
+  level:
+    net.bqc.uss: DEBUG
