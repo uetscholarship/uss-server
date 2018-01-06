@@ -25,9 +25,10 @@ spring:
     driver-class-name: com.mysql.jdbc.Driver
 
 messenger:
-  server: ${USS_MESSENGER_SERVER}
+  server: http://localhost:8888
+
 ws:
-  notifier: ${messenger.server}/services/Notifier
+  messenger: ${messenger.server}/services/Messenger
 
 logging:
   level:

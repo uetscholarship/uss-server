@@ -7,3 +7,9 @@ fb:
 
 webhook:
   token: ${USS_MESSENGER_WEBHOOK_TOKEN}
+
+uetgrade:
+  server: http://localhost:8899
+
+ws:
+  uetgrade: ${uetgrade.server}/services/UetGrade

@@ -17,7 +17,7 @@ import javax.xml.ws.Endpoint;
 @Configuration
 public class WebserviceConfiguration {
 
-    @Value("${ws.notifier}")
+    @Value("${ws.messenger}")
     private String messengerServiceAddress;
 
     @Autowired

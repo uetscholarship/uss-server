@@ -13,6 +13,6 @@ uet:
     url: https://uet.vnu.edu.vn/category/tin-tuc/tin-sinh-vien/feed
 
 messenger:
-  server: ${USS_MESSENGER_SERVER}
+  server: http://localhost:8888
 ws:
   notifier: ${messenger.server}/services/Notifier
