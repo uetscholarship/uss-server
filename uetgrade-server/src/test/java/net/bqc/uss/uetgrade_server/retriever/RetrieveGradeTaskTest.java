@@ -16,6 +16,6 @@ public class RetrieveGradeTaskTest {
 
     @Test
     public void testTaskExecutor() {
-        retrieveGradeTask.getRawGrades(true);
+        retrieveGradeTask.getRawGrades();
     }
 }
