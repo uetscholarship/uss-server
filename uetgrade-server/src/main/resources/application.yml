@@ -15,7 +15,7 @@ uet:
 spring:
   jpa:
     show-sql: true
-    hibernate.ddl-auto: create-drop
+    hibernate.ddl-auto: none
 
     database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
   datasource:

@@ -1,16 +1,21 @@
-package net.bqc.uss.uetgrade_server.retriever;
+package net.bqc.uss.uetgrade_server.retriever.grade;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import net.bqc.uss.uetgrade_server.entity.Course;
+import net.bqc.uss.uetgrade_server.repository.CourseRepository;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class RetrieveGradeTask {
@@ -40,10 +45,11 @@ public class RetrieveGradeTask {
     private Map<String, String> cookies;
     private String token;
 
-    public String run() {
+    public String getRawGrades() {
         try {
             login();
-            return getGrades();
+            String rawGrades = getGrades();
+            return rawGrades;
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -51,7 +57,7 @@ public class RetrieveGradeTask {
         }
     }
 
-    public void login() throws IOException {
+    private void login() throws IOException {
         // get token to login
 
         Connection.Response loginPageResponse = Jsoup.connect(gradeHost)
@@ -83,7 +89,7 @@ public class RetrieveGradeTask {
                 .execute();
     }
 
-    public String getGrades() throws IOException {
+    private String getGrades() throws IOException {
         // prepare parameters
         Map<String, String> formParams = new HashMap<>();
         formParams.put("_token", this.token);

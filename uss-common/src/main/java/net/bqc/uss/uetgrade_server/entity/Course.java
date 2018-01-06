@@ -13,11 +13,11 @@ public class Course {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
 
-    @Column(name = "course_name")
-    private String name;
-
     @Column(name = "course_code", unique = true)
     private String code;
+
+    @Column(name = "course_name")
+    private String name;
 
     @Column(name = "grade_url")
     private String gradeUrl;
@@ -31,6 +31,12 @@ public class Course {
     public Course(String code, String name) {
         this.name = name;
         this.code = code;
+    }
+
+    public Course(String code, String name, String gradeUrl) {
+        this.name = name;
+        this.code = code;
+        this.gradeUrl = gradeUrl;
     }
 
     public Integer getId() {
@@ -88,8 +94,9 @@ public class Course {
     @Override
     public String toString() {
         return "Course{" +
-                "name='" + name + '\'' +
-                ", code='" + code + '\'' +
+                "code='" + code + '\'' +
+                ", name='" + name + '\'' +
+                ", gradeUrl='" + gradeUrl + '\'' +
                 '}';
     }
 }
