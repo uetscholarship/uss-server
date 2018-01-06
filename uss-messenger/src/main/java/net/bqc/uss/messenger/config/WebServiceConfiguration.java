@@ -53,7 +53,7 @@ public class WebServiceConfiguration {
     @Bean
     public UetGradeService uetGradeProxy() {
         JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
-        factory.setServiceClass(NotifierService.class);
+        factory.setServiceClass(UetGradeService.class);
         factory.setAddress(uetGradeServiceAddress);
         return (UetGradeService) factory.create();
     }

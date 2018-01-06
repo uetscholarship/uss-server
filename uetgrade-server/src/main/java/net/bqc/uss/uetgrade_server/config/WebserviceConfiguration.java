@@ -38,7 +38,7 @@ public class WebserviceConfiguration {
     @Bean
     public MessengerService messengerProxy() {
         JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
-        factory.setServiceClass(NotifierService.class);
+        factory.setServiceClass(MessengerService.class);
         factory.setAddress(messengerServiceAddress);
         return (MessengerService) factory.create();
     }
