@@ -1,6 +1,8 @@
 package net.bqc.uss.messenger.config;
 
+import net.bqc.uss.messenger.jaxws.MessengerServiceEndpoint;
 import net.bqc.uss.messenger.jaxws.NotifierServiceEndpoint;
+import net.bqc.uss.service.MessengerService;
 import net.bqc.uss.service.NotifierService;
 
 import org.apache.cxf.bus.spring.SpringBus;
@@ -21,11 +23,23 @@ public class WebServiceConfiguration {
     public NotifierService notifierService() {
     	return new NotifierServiceEndpoint();
     }
+
+    @Bean
+    public MessengerService messengerService() {
+        return new MessengerServiceEndpoint();
+    }
     
     @Bean
-    public Endpoint endpoint() {
+    public Endpoint endpointNotifier() {
         EndpointImpl endpoint = new EndpointImpl(bus, notifierService());
         endpoint.publish("/Notifier");
+        return endpoint;
+    }
+
+    @Bean
+    public Endpoint endpointMessenger() {
+        EndpointImpl endpoint = new EndpointImpl(bus, messengerService());
+        endpoint.publish("/Messenger");
         return endpoint;
     }
 }
