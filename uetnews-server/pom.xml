@@ -12,7 +12,7 @@
     <packaging>war</packaging>
 
     <artifactId>uetnews-server</artifactId>
-    <name>Uet News Server</name>
+    <name>UET News Server</name>
     
     <dependencies>
         <dependency>
