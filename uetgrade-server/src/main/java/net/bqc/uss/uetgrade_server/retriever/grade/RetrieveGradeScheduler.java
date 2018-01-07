@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import net.bqc.uss.service.MessengerService;
 import net.bqc.uss.uetgrade_server.entity.Course;
+import net.bqc.uss.uetgrade_server.entity.Student;
 import net.bqc.uss.uetgrade_server.repository.CourseRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +17,8 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 public class RetrieveGradeScheduler {
@@ -37,8 +40,8 @@ public class RetrieveGradeScheduler {
     @Autowired
     private MessengerService messengerServiceProxy;
 
-    @Scheduled(cron = "0 */30 6-18 * * MON-FRI", zone = "GMT+7")
-//	@Scheduled(cron = "*/30 * * * * *", zone = "GMT+7")
+//    @Scheduled(cron = "0 */30 6-18 * * MON-FRI", zone = "GMT+7")
+	@Scheduled(cron = "0 */5 * * * *", zone = "GMT+7")
     public void retrieveNewGrades() {
         try {
             logger.debug("Retrieving new graded courses...");
@@ -46,8 +49,21 @@ public class RetrieveGradeScheduler {
             List<Course> newGradedCourses = parse(rawGrades, true);
             logger.debug("New graded courses here: " + newGradedCourses);
 
+            // filter, only keep students who are subscribing to get grades
+            newGradedCourses.forEach(course -> {
+                Set<Student> filteredStudents = course.getStudents().stream()
+                        .filter(student -> {
+                            student.setCourses(null);
+                            return student.isSubscribed();
+                        })
+                        .collect(Collectors.toSet());
+                course.setStudents(filteredStudents);
+            });
+
             logger.debug("Notifying for Messenger service...");
-            // TODO: notify new graded course for messenger
+            // notify new graded course for messenger
+            boolean result = messengerServiceProxy.notifyNewGradedCourses(newGradedCourses);
+            logger.debug("Result: {}", result);
 
         }
         catch (IOException e) {
@@ -85,6 +101,8 @@ public class RetrieveGradeScheduler {
                     else { // graded course and not exist in db
                         Course newCourse = new Course(courseCode, courseName, gradeUrl);
                         courseRepository.save(newCourse);
+                        // course with grade but not exist in db, of course it is a new graded course
+                        newGradedCourses.add(newCourse);
                     }
                 }
                 else if (saveAllCourses) { // for first run, save all course include not-graded course
@@ -95,10 +113,10 @@ public class RetrieveGradeScheduler {
                     }
                 }
 
-                logger.debug("Course information: "
-                        + courseCode + " | "
-                        + courseName + " | "
-                        + gradeUrl);
+//                logger.debug("Course information: "
+//                        + courseCode + " | "
+//                        + courseName + " | "
+//                        + gradeUrl);
             }
         }
         return newGradedCourses;

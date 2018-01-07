@@ -23,7 +23,7 @@ public class Course implements Serializable {
     @Column(name = "grade_url")
     private String gradeUrl;
 
-    @ManyToMany(mappedBy = "courses")
+    @ManyToMany(mappedBy = "courses", fetch = FetchType.EAGER)
     private Set<Student> students;
 
     public Course() {

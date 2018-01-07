@@ -46,7 +46,7 @@ public class MessengerServiceEndpoint extends SpringBeanAutowiringSupport implem
 						student.addCourses(course);
 					}));
 
-			logger.debug("Send grades for student codes: {}", students.stream()
+			logger.debug("Sending grades for student codes: {}", students.stream()
 					.map(Student::getCode).collect(Collectors.toList()));
 			students.stream()
 				.filter(Student::isSubscribed)
@@ -54,7 +54,6 @@ public class MessengerServiceEndpoint extends SpringBeanAutowiringSupport implem
 					List<String> subscribers = gradeSubscriberDao.findSubscribersByStudentCode(student.getCode());
 					if (student.getCourses().size() > 0) {
 						subscribers.forEach(subscriber -> {
-							logger.debug("Send grades of student code {} for subscriber {}", student.getCode(), subscriber);
 							Message introMessage = myMessengerService.buildGenericMessage(
 									myMessengerService.getMessage("grade.new_grade.std.title", null),
 									myMessengerService.getMessage("grade.new_grade.std.subtitle",
@@ -64,6 +63,7 @@ public class MessengerServiceEndpoint extends SpringBeanAutowiringSupport implem
 							Message gradesInfoMessage = myMessengerService.buildCoursesInfoMessage(student.getCourses());
 							myMessengerService.sendMessage(subscriber, introMessage);
 							myMessengerService.sendMessage(subscriber, gradesInfoMessage);
+							logger.debug("Sent grades of student code [{}] for subscriber [{}]", student.getCode(), subscriber);
 						});
 					}
 				});
