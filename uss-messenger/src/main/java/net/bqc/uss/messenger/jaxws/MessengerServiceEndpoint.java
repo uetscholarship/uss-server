@@ -46,6 +46,10 @@ public class MessengerServiceEndpoint extends SpringBeanAutowiringSupport implem
 						student.addCourses(course);
 					}));
 
+			if (students.size() == 0) {
+			    return true;
+            }
+
 			logger.debug("Sending grades for student codes: {}", students.stream()
 					.map(Student::getCode).collect(Collectors.toList()));
 			students.stream()

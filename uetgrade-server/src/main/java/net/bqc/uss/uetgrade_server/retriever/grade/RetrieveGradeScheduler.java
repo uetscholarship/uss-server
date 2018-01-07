@@ -41,7 +41,7 @@ public class RetrieveGradeScheduler {
     private MessengerService messengerServiceProxy;
 
 //    @Scheduled(cron = "0 */30 6-18 * * MON-FRI", zone = "GMT+7")
-	@Scheduled(cron = "0 */5 * * * *", zone = "GMT+7")
+	@Scheduled(cron = "0 */1 * * * *", zone = "GMT+7")
     public void retrieveNewGrades() {
         try {
             logger.debug("Retrieving new graded courses...");
@@ -49,22 +49,24 @@ public class RetrieveGradeScheduler {
             List<Course> newGradedCourses = parse(rawGrades, true);
             logger.debug("New graded courses here: " + newGradedCourses);
 
-            // filter, only keep students who are subscribing to get grades
-            newGradedCourses.forEach(course -> {
-                Set<Student> filteredStudents = course.getStudents().stream()
-                        .filter(student -> {
-                            student.setCourses(null);
-                            return student.isSubscribed();
-                        })
-                        .collect(Collectors.toSet());
-                course.setStudents(filteredStudents);
-            });
+            if (newGradedCourses.size() == 0) {
+                // filter, only keep students who are subscribing to get grades
+                newGradedCourses.forEach(course -> {
+                    Set<Student> filteredStudents = course.getStudents().stream()
+                            .filter(student -> {
+                                student.setCourses(null);
+                                return student.isSubscribed();
+                            })
+                            .collect(Collectors.toSet());
+                    course.setStudents(filteredStudents);
+                });
 
-            logger.debug("Notifying for Messenger service...");
-            // notify new graded course for messenger
-            boolean result = messengerServiceProxy.notifyNewGradedCourses(newGradedCourses);
-            logger.debug("Result: {}", result);
+                logger.debug("Notifying for Messenger service...");
+                // notify new graded course for messenger
+                boolean result = messengerServiceProxy.notifyNewGradedCourses(newGradedCourses);
+                logger.debug("Result: {}", result);
 
+            }
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -95,6 +97,7 @@ public class RetrieveGradeScheduler {
                         if (existedCourse.getGradeUrl() == null) { // exist db but not graded before
                             courseRepository.updateGradeUrlByCode(courseCode, gradeUrl);
                             // this is the course we have to notify user as a new grade course
+                            existedCourse.setGradeUrl(gradeUrl);
                             newGradedCourses.add(existedCourse);
                         }
                     }
