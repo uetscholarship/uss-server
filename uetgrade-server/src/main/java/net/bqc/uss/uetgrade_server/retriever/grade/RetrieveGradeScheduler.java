@@ -49,7 +49,7 @@ public class RetrieveGradeScheduler {
             List<Course> newGradedCourses = parse(rawGrades, true);
             logger.debug("New graded courses here: " + newGradedCourses);
 
-            if (newGradedCourses.size() == 0) {
+            if (newGradedCourses.size() > 0) {
                 // filter, only keep students who are subscribing to get grades
                 newGradedCourses.forEach(course -> {
                     Set<Student> filteredStudents = course.getStudents().stream()
