@@ -59,14 +59,16 @@ public class MyMessengerService {
 	}
 	
 	public void sendNewsSubscriptionStatus(String recipient, boolean isSubscribed) {
-		Message message = new Message(getMessage("text.nothing", null));
+		Message message = null;
 		QuickReply quickreply;
 		
 		if (isSubscribed) {
+		    message = new Message(getMessage("news.text.subscribed", null));
 			quickreply = new QuickReply(getMessage("news.qr.unsub", null),
 					QR_UNSUBSCRIBE_NEWS_PAYLOAD);
 		}
 		else {
+            message = new Message(getMessage("news.text.no_subscribed", null));
 			quickreply= new QuickReply(getMessage("news.qr.sub", null),
 					QR_SUBSCRIBE_NEWS_PAYLOAD);
 		}

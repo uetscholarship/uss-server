@@ -19,7 +19,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -58,15 +57,14 @@ public class WebhookController {
 	private JsonMapper jsonMapper = new DefaultJsonMapper();
 
 	@RequestMapping(value="/webhook", method=RequestMethod.GET)
-	public String validate(Model model,
-			@RequestParam(value="hub.challenge") String challenge,
+	public String validate(@RequestParam(value="hub.challenge") String challenge,
 			@RequestParam(value="hub.verify_token") String token) {
 
 		return (webhookToken.equals(token)) ? challenge : "not valid";
 	}
 	
 	@RequestMapping(value="/webhook", method=RequestMethod.POST)
-	public ResponseEntity<String> receive(Model model, @RequestBody final String json) {
+	public ResponseEntity<String> receive(@RequestBody final String json) {
 		logger.debug("Request: {}", json);
 		try {
 			WebhookObject data = jsonMapper.toJavaObject(json, WebhookObject.class);
