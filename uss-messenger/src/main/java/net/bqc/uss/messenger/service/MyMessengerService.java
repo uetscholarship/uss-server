@@ -2,10 +2,12 @@ package net.bqc.uss.messenger.service;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
 import com.restfb.types.send.*;
+import net.bqc.uss.uetgrade_server.entity.Course;
 import net.bqc.uss.uetgrade_server.entity.Student;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -59,7 +61,7 @@ public class MyMessengerService {
 	}
 	
 	public void sendNewsSubscriptionStatus(String recipient, boolean isSubscribed) {
-		Message message = null;
+		Message message;
 		QuickReply quickreply;
 		
 		if (isSubscribed) {
@@ -103,7 +105,7 @@ public class MyMessengerService {
 				getMessage("grade.qr.sub", null),
 				QR_SUBSCRIBE_GRADE_PAYLOAD);
 
-		studentCodes.stream().forEach(studentCode -> {
+		studentCodes.forEach(studentCode -> {
 			Bubble bubble = new Bubble(getMessage("grade.std.title", new Object[] {studentCode }));  // MSSV: 1402xxxx
 			bubble.setSubtitle(getMessage("grade.std.content", null));
 			PostbackButton postbackButton = new PostbackButton(getMessage("grade.btn.unsub", null),
@@ -152,28 +154,32 @@ public class MyMessengerService {
 		return new Message(text);
 	}
 
-	private String getMessage(String key, Object[] objects) {
+	public String getMessage(String key, Object[] objects) {
 		return messageSource.getMessage(key, objects, Locale.ENGLISH);
 	}
 
 	public void sendCoursesList(String recipient, Student student) {
-		// else if uetgrade-server responses courses with grades, notify to user
-		GenericTemplatePayload payload = new GenericTemplatePayload();
-		TemplateAttachment attachment = new TemplateAttachment(payload);
-		student.getCourses().stream().forEach(course -> {
-			Bubble bubble = new Bubble(String.format("[%s] %s", course.getCode(), course.getName())); // maximum characters for title is 80
-			if (course.getGradeUrl() != null) {
-				bubble.setSubtitle(getMessage("grade.course.subtitle", null));
-				WebButton button = new WebButton(getMessage("grade.course.read", null), course.getGradeUrl());
-				bubble.addButton(button);
-			}
-			else {
-				bubble.setSubtitle(getMessage("grade.course.has_no_grade", null));
-			}
-			payload.addBubble(bubble);
-		});
-
-		Message message = new Message(attachment);
-		sendMessage(recipient, message);
+		Message courseListMessage = buildCoursesInfoMessage(student.getCourses());
+		sendMessage(recipient, courseListMessage);
 	}
+
+    public Message buildCoursesInfoMessage(Set<Course> courses) {
+        GenericTemplatePayload payload = new GenericTemplatePayload();
+        TemplateAttachment attachment = new TemplateAttachment(payload);
+        courses.forEach(course -> {
+            Bubble bubble = new Bubble(String.format("[%s] %s", course.getCode(), course.getName())); // maximum characters for title is 80
+            if (course.getGradeUrl() != null) {
+                bubble.setSubtitle(getMessage("grade.course.subtitle", null));
+                WebButton button = new WebButton(getMessage("grade.course.read", null), course.getGradeUrl());
+                bubble.addButton(button);
+            }
+            else {
+                bubble.setSubtitle(getMessage("grade.course.has_no_grade", null));
+            }
+            payload.addBubble(bubble);
+        });
+
+        Message message = new Message(attachment);
+        return message;
+    }
 }

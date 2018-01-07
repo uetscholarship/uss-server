@@ -1,12 +1,13 @@
 package net.bqc.uss.uetgrade_server.entity;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.Set;
 
 @Entity
 @Table(name = "course")
-public class Course {
+public class Course implements Serializable {
 
     @Id
     @Column(name = "course_id")
@@ -87,8 +88,8 @@ public class Course {
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof Course)) return false;
-        else if (o == this) return true;
-        else return this.code != null && this.code.equals(((Course)o).code);
+        else
+            return o == this || this.code != null && this.code.equals(((Course) o).code);
     }
 
     @Override

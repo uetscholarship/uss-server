@@ -3,12 +3,14 @@ package net.bqc.uss.uetgrade_server.entity;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
 @Table(name = "student")
-public class Student {
+public class Student implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -65,12 +67,31 @@ public class Student {
         this.courses = courses;
     }
 
+    public void addCourses(Course course) {
+        if (this.courses == null) {
+            this.courses = new HashSet<>();
+        }
+        this.courses.add(course);
+    }
+
     public void setSubscribed(boolean subscribed) {
         isSubscribed = subscribed;
     }
 
     public boolean isSubscribed() {
         return isSubscribed;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(code);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Student)) return false;
+        else
+            return o == this || this.code != null && this.code.equals(((Student) o).code);
     }
 
     @Override
