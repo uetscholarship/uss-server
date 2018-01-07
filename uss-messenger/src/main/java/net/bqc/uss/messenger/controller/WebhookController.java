@@ -152,13 +152,13 @@ public class WebhookController {
                         .filter(course -> course.getGradeUrl() != null)
                         .count();
 
-                myMessengerService.sendTextMessage(userId,
-                        getMessage(
-                                "grade.text.std.has_course",
-                                new Object[] {
-                                    studentCode,
-                                    gradedCoursesCount,
-                                    student.getCourses().size()}));
+				Message successMessage = myMessengerService.buildGenericMessage(
+						String.format("[%s] %s", student.getCode(), student.getName()),
+						getMessage("grade.text.std.has_course",
+								new Object[] { student.getName(), gradedCoursesCount, student.getCourses().size()}),
+						null, null);
+				myMessengerService.sendMessage(userId, successMessage);
+
 
                 // send course list
                 myMessengerService.sendCoursesList(userId, student);

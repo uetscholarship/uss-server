@@ -159,7 +159,7 @@ public class MyMessengerService {
 		GenericTemplatePayload payload = new GenericTemplatePayload();
 		TemplateAttachment attachment = new TemplateAttachment(payload);
 		student.getCourses().stream().forEach(course -> {
-			Bubble bubble = new Bubble(course.getName()); // maximum characters for title is 80
+			Bubble bubble = new Bubble(String.format("[%s] %s", course.getCode(), course.getName())); // maximum characters for title is 80
 			if (course.getGradeUrl() != null) {
 				bubble.setSubtitle(getMessage("grade.course.subtitle", null) + " " + course.getCode());
 				WebButton button = new WebButton(getMessage("grade.course.read", null), course.getGradeUrl());
