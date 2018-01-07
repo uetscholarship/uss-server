@@ -3,7 +3,7 @@ server:
 
 uet:
   grade:
-    host: http://112.137.129.30/viewgrade
+    host: http://e4b.vn/viewgrade
     term.code: 1
     education.type: 0
     account:
