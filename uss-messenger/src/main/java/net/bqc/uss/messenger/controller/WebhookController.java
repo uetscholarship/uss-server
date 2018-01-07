@@ -153,7 +153,7 @@ public class WebhookController {
                         .count();
 
 				Message successMessage = myMessengerService.buildGenericMessage(
-						String.format("[%s] %s", student.getCode(), student.getName()),
+						String.format("[%s]", student.getCode()),
 						getMessage("grade.text.std.has_course",
 								new Object[] { student.getName(), gradedCoursesCount, student.getCourses().size()}),
 						null, null);
@@ -234,7 +234,7 @@ public class WebhookController {
                 // request subscribe to uetgrade-server for that student code
                 // if uetgrade-server return true, notify success, and insert into grade_subscribers
                 // 		else notify fail
-				logger.debug("Request uetgrade-server to unsubscribe for " + studentCode);
+				logger.debug("Request uetgrade-server to subscribe for " + studentCode);
 				boolean result = uetGradeService.subscribeGrade(studentCode);
 				logger.debug("Result: " + result);
                 if (result) { // success

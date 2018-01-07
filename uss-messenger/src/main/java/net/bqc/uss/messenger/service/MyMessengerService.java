@@ -161,7 +161,7 @@ public class MyMessengerService {
 		student.getCourses().stream().forEach(course -> {
 			Bubble bubble = new Bubble(String.format("[%s] %s", course.getCode(), course.getName())); // maximum characters for title is 80
 			if (course.getGradeUrl() != null) {
-				bubble.setSubtitle(getMessage("grade.course.subtitle", null) + " " + course.getCode());
+				bubble.setSubtitle(getMessage("grade.course.subtitle", null));
 				WebButton button = new WebButton(getMessage("grade.course.read", null), course.getGradeUrl());
 				bubble.addButton(button);
 			}
