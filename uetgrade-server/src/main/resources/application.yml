@@ -15,11 +15,11 @@ uet:
 spring:
   jpa:
     show-sql: true
-    hibernate.ddl-auto: none
+    hibernate.ddl-auto: create
 
-    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    database-platform: org.hibernate.dialect.MySQLCustomDialect
   datasource:
-    url: jdbc:mysql://localhost:3306/uetgrade
+    url: jdbc:mysql://localhost:3306/uetgrade?useSSL=false&useUnicode=true&characterEncoding=utf-8
     username: ${UET_GRADE_DB_USERNAME}
     password: ${UET_GRADE_DB_PASSWORD}
     driver-class-name: com.mysql.jdbc.Driver
