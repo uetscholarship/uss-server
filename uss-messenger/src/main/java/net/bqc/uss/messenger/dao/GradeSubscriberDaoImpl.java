@@ -1,13 +1,18 @@
 package net.bqc.uss.messenger.dao;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
 public class GradeSubscriberDaoImpl {
+
+    private static final Logger logger = LoggerFactory.getLogger(GradeSubscriberDaoImpl.class);
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -19,8 +24,8 @@ public class GradeSubscriberDaoImpl {
             return subscriberIds;
         }
         catch (Exception e) {
-            e.printStackTrace();
-            return null;
+            logger.error(e.getMessage());
+            return new ArrayList<>();
         }
     }
 
@@ -31,8 +36,20 @@ public class GradeSubscriberDaoImpl {
             return studentCodes;
         }
         catch (Exception e) {
-            e.printStackTrace();
-            return null;
+            logger.error(e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
+    public boolean isSubscribed(String fbId, String studentCode) {
+        try {
+            String sql = "SELECT COUNT(*) FROM grade_subscribers WHERE fb_id = ? AND student_code = ?";
+            Integer count = jdbcTemplate.queryForObject(sql, new Object[] { fbId, studentCode }, Integer.class);
+            return count > 0;
+        }
+        catch (Exception e) {
+            logger.error(e.getMessage());
+            return false;
         }
     }
 
@@ -43,7 +60,7 @@ public class GradeSubscriberDaoImpl {
             return true;
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             return false;
         }
     }
@@ -55,7 +72,7 @@ public class GradeSubscriberDaoImpl {
             return true;
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             return false;
         }
     }

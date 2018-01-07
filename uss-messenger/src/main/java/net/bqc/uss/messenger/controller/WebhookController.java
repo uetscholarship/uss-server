@@ -166,7 +166,7 @@ public class WebhookController {
 
 	private void processUnsubscribeGradeMessage(String userId, String payload) {
 		// get student code from postback if student dont match pattern notify error else
-		// remove from grade_subscribers
+		// check and remove from grade_subscribers
 		// check if there's no subscriber of that student code, send unsubscribe to uetgrade-server
 		// send text message to user, notify unsub successfully
 		String[] payloadPieces = payload.split("_");
@@ -179,16 +179,21 @@ public class WebhookController {
             myMessengerService.sendMessage(userId, errorMessage);
 		}
 		else {
-			gradeSubscriberDao.deleteSubscriber(userId, studentCode);
-			List<String> subscribers = gradeSubscriberDao.findSubscribersByStudentCode(studentCode);
-			if (subscribers.size() == 0) {
-				// TODO: send unsubscribe message for uetgrade-server
+			if (!gradeSubscriberDao.isSubscribed(userId, studentCode)) {
+
 			}
-            Message successMessage = myMessengerService.buildGenericMessage(
-                    getMessage("text.title.success", null),
-                    getMessage("grade.text.unsub.success", new Object[] { studentCode }),
-                    null, null);
-            myMessengerService.sendMessage(userId, successMessage);
+			else {
+				gradeSubscriberDao.deleteSubscriber(userId, studentCode);
+				List<String> subscribers = gradeSubscriberDao.findSubscribersByStudentCode(studentCode);
+				if (subscribers.size() == 0) {
+					// TODO: send unsubscribe message for uetgrade-server
+				}
+				Message successMessage = myMessengerService.buildGenericMessage(
+						getMessage("text.title.success", null),
+						getMessage("grade.text.unsub.success", new Object[]{studentCode}),
+						null, null);
+				myMessengerService.sendMessage(userId, successMessage);
+			}
 		}
 
 	}

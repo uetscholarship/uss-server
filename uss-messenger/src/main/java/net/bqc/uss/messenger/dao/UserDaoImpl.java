@@ -4,7 +4,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-import net.bqc.uss.messenger.controller.WebhookController;
 import net.bqc.uss.messenger.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
