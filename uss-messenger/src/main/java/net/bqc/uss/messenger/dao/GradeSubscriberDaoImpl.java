@@ -1,11 +1,16 @@
 package net.bqc.uss.messenger.dao;
 
+import net.bqc.uss.messenger.model.Subscriber;
+import net.bqc.uss.messenger.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +21,12 @@ public class GradeSubscriberDaoImpl {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    public List<Subscriber> findAll() {
+        String sql = "SELECT * FROM grade_subscribers";
+        List<Subscriber> result = jdbcTemplate.query(sql, new SubscriberRowMapper());
+        return result;
+    }
 
     public List<String> findSubscribersByStudentCode(String studentCode) {
         try {
@@ -75,5 +86,18 @@ public class GradeSubscriberDaoImpl {
             logger.error(e.getMessage());
             return false;
         }
+    }
+
+    public class SubscriberRowMapper implements RowMapper<Subscriber> {
+
+        @Override
+        public Subscriber mapRow(ResultSet arg0, int arg1) throws SQLException {
+            Subscriber subscriber = new Subscriber();
+            subscriber.setId(arg0.getInt("id"));
+            subscriber.setFbId(arg0.getString("fb_id"));
+            subscriber.setStudentCode(arg0.getString("student_code"));
+            return subscriber;
+        }
+
     }
 }
