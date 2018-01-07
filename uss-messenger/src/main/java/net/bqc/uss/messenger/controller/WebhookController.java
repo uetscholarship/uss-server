@@ -10,6 +10,7 @@ import net.bqc.uss.messenger.dao.GradeSubscriberDaoImpl;
 import net.bqc.uss.messenger.dao.UserDao;
 import net.bqc.uss.messenger.model.User;
 import net.bqc.uss.messenger.service.MyMessengerService;
+import net.bqc.uss.service.UetGradeService;
 import net.bqc.uss.uetgrade_server.entity.Student;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +37,8 @@ public class WebhookController {
 
 	private static final Logger logger = LoggerFactory.getLogger(WebhookController.class);
 
+	@Autowired
+	private UetGradeService uetGradeService;
 
 	@Autowired
 	private MyMessengerService myMessengerService;
@@ -132,8 +135,9 @@ public class WebhookController {
         //		else send grades as list for user
 		List<String> studentCodes = gradeSubscriberDao.findStudentCodesBySubscriber(userId);
 		studentCodes.stream().forEach(studentCode -> {
-			Student student = null; // TODO: get all students (included all courses)
-
+			logger.debug("Request to uetgrade-server get all courses for " + studentCode + ": ");
+			Student student = uetGradeService.getStudentWithAllCourses(studentCode);
+			logger.debug("Result: " + student);
 			if (student == null) {
 				myMessengerService.sendTextMessage(userId,
 						getMessage("grade.text.std.current_processing", new Object[] { studentCode }));
@@ -171,7 +175,7 @@ public class WebhookController {
 		// send text message to user, notify unsub successfully
 		String[] payloadPieces = payload.split("_");
 		String studentCode = payloadPieces[payloadPieces.length - 1];
-		if (!studentCode.matches("\\d{8}")) {
+		if (!studentCode.matches("\\d{8}") || !gradeSubscriberDao.isSubscribed(userId, studentCode)) {
             Message errorMessage = myMessengerService.buildGenericMessage(
                     getMessage("text.title.warning", null),
                     getMessage("text.err", null),
@@ -179,21 +183,18 @@ public class WebhookController {
             myMessengerService.sendMessage(userId, errorMessage);
 		}
 		else {
-			if (!gradeSubscriberDao.isSubscribed(userId, studentCode)) {
-
+			gradeSubscriberDao.deleteSubscriber(userId, studentCode);
+			List<String> subscribers = gradeSubscriberDao.findSubscribersByStudentCode(studentCode);
+			if (subscribers.size() == 0) {
+				logger.debug("Request uetgrade-server to unsubscribe for " + studentCode);
+				boolean result = uetGradeService.unsubscribeGrade(studentCode);
+				logger.debug("Result: " + result);
 			}
-			else {
-				gradeSubscriberDao.deleteSubscriber(userId, studentCode);
-				List<String> subscribers = gradeSubscriberDao.findSubscribersByStudentCode(studentCode);
-				if (subscribers.size() == 0) {
-					// TODO: send unsubscribe message for uetgrade-server
-				}
-				Message successMessage = myMessengerService.buildGenericMessage(
-						getMessage("text.title.success", null),
-						getMessage("grade.text.unsub.success", new Object[]{studentCode}),
-						null, null);
-				myMessengerService.sendMessage(userId, successMessage);
-			}
+			Message successMessage = myMessengerService.buildGenericMessage(
+					getMessage("text.title.success", null),
+					getMessage("grade.text.unsub.success", new Object[]{studentCode}),
+					null, null);
+			myMessengerService.sendMessage(userId, successMessage);
 		}
 
 	}
@@ -233,8 +234,9 @@ public class WebhookController {
                 // request subscribe to uetgrade-server for that student code
                 // if uetgrade-server return true, notify success, and insert into grade_subscribers
                 // 		else notify fail
-                // TODO: request subscribe to uetgrade-server for that student code
-                boolean result = true;
+				logger.debug("Request uetgrade-server to unsubscribe for " + studentCode);
+				boolean result = uetGradeService.subscribeGrade(studentCode);
+				logger.debug("Result: " + result);
                 if (result) { // success
                     gradeSubscriberDao.insertSubscriber(userId, studentCode);
                     message = myMessengerService.buildGenericMessage(

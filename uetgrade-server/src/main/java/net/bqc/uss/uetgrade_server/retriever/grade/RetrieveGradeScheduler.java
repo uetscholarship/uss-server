@@ -22,6 +22,9 @@ public class RetrieveGradeScheduler {
 
     private static final Logger logger = LoggerFactory.getLogger(RetrieveGradeScheduler.class);
 
+    @Value("${uet.grade.host}")
+    private String gradeHost;
+
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -67,7 +70,8 @@ public class RetrieveGradeScheduler {
                 String courseCode = courseNode.get(1).asText();
                 String courseName = courseNode.get(0).asText();
                 String gradeUrl = courseNode.get(2).asText();
-                gradeUrl = (gradeUrl != null && gradeUrl.trim().isEmpty()) ? null : gradeUrl;
+                gradeUrl = (gradeUrl != null && gradeUrl.trim().isEmpty())
+                        ? null : (String.format("%s/%s", gradeHost, gradeUrl));
 
                 if (gradeUrl != null) { // graded courses
                     Course existedCourse = courseRepository.findByCode(courseCode);

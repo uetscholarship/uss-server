@@ -72,4 +72,14 @@ public class Student {
     public boolean isSubscribed() {
         return isSubscribed;
     }
+
+    @Override
+    public String toString() {
+        return "Student{" +
+                "code='" + code + '\'' +
+                ", name='" + name + '\'' +
+                ", isSubscribed=" + isSubscribed +
+                ", courses=" + courses +
+                '}';
+    }
 }
