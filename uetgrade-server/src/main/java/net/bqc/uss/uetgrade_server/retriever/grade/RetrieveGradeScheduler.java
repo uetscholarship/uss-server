@@ -40,8 +40,8 @@ public class RetrieveGradeScheduler {
     @Autowired
     private MessengerService messengerServiceProxy;
 
-//    @Scheduled(cron = "0 */30 6-18 * * MON-FRI", zone = "GMT+7")
-	@Scheduled(cron = "0 */1 * * * *", zone = "GMT+7")
+    @Scheduled(cron = "0 */30 6-18 * * MON-FRI", zone = "GMT+7")
+//	@Scheduled(cron = "0 */1 * * * *", zone = "GMT+7")
     public void retrieveNewGrades() {
         try {
             logger.debug("Retrieving new graded courses...");
