@@ -20,8 +20,8 @@ public class RetrieveNewsScheduler {
 	@Autowired
 	private RetrieveNewsTask retrieveNewsTask;
 
-	// every 30 minutes from 6h to 18h, Monday to Friday
-	@Scheduled(cron = "0 */30 6-18 * * MON-FRI", zone = "GMT+7")
+	// every 30 minutes but from the 10th minute, 6h to 18h, Monday to Friday
+	@Scheduled(cron = "0 10/30 6-18 * * MON-FRI", zone = "GMT+7")
 //	@Scheduled(cron = "*/30 * * * * *", zone = "GMT+7")
 	public void retrieve() {
 		this.latestLink = retrieveNewsTask.call(this.latestLink);
