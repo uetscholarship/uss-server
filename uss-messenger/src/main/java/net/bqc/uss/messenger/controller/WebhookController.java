@@ -137,9 +137,20 @@ public class WebhookController {
 		else if (MyMessengerService.MN_NEWS_SUBSCRIPTION_PAYLOAD.equals(payload)) {
 			processMenuNewsSubscriptionMessage(userId);
 		}
+		else if (MyMessengerService.BTN_GET_STARTED_PAYLOAD.equals(payload)) {
+			processGetStartedMessage(userId);
+		}
 	}
 
-    private void processReqGetGradesMessage(String userId, String payload) {
+	private void processGetStartedMessage(String userId) {
+		Message welcomeMessage = myMessengerService.buildGenericMessage(
+				getMessage("text.welcome.title", null),
+				getMessage("text.welcome.subtitle", null),
+				null, null);
+		myMessengerService.sendMessage(userId, welcomeMessage);
+	}
+
+	private void processReqGetGradesMessage(String userId, String payload) {
         String[] payloadPieces = payload.split("_");
         String studentCode = payloadPieces[payloadPieces.length - 1];
         if (!studentCode.matches("\\d{8}") || !gradeSubscriberDao.isSubscribed(userId, studentCode)) {

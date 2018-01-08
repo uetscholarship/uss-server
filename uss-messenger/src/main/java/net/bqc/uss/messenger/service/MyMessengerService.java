@@ -37,6 +37,8 @@ public class MyMessengerService {
 	public static final String BTN_UNSUBSCRIBE_GRADE_PAYLOAD = "BTN_UNSUBSCRIBE_GRADE_PAYLOAD";
 	public static final String BTN_GET_GRADES_PAYLOAD = "BTN_GET_GRADES_PAYLOAD";
 
+	public static final String BTN_GET_STARTED_PAYLOAD = "BTN_GET_STARTED_PAYLOAD";
+
 	@Value("${fb.page.token}")
 	private String PAGE_TOKEN;
 	
