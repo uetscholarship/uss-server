@@ -66,11 +66,12 @@ public class WebhookController {
 	@RequestMapping(value="/webhook", method=RequestMethod.POST)
 	public ResponseEntity<String> receive(@RequestBody final String json) {
 		logger.debug("Request: {}", json);
+		String userId = null;
 		try {
 			WebhookObject data = jsonMapper.toJavaObject(json, WebhookObject.class);
 			List<MessagingItem> messagingItems = data.getEntryList().get(0).getMessaging();
 			for (MessagingItem messagingItem : messagingItems) {
-				String userId = messagingItem.getSender().getId();
+				userId = messagingItem.getSender().getId();
 				PostbackItem postbackItem = messagingItem.getPostback();
 
 				MessageItem messageItem = messagingItem.getMessage();
@@ -97,7 +98,17 @@ public class WebhookController {
 		}
 		catch(Exception e) {
 			e.printStackTrace();
-			return new ResponseEntity<>("error", HttpStatus.INTERNAL_SERVER_ERROR);
+
+			if (userId != null) {
+                // notify error to users and ask him/her to retry
+                Message errorMessage = myMessengerService.buildGenericMessage(
+                        getMessage("text.title.fail", null),
+                        getMessage("text.subtitle.fail", null),
+                        null, null);
+                myMessengerService.sendMessage(userId, errorMessage);
+            }
+
+			return new ResponseEntity<>("error", HttpStatus.OK);
 		}
 	}
 
@@ -133,38 +144,41 @@ public class WebhookController {
         //		else send grades as list for user
 		List<String> studentCodes = gradeSubscriberDao.findStudentCodesBySubscriber(userId);
 		studentCodes.stream().forEach(studentCode -> {
-			logger.debug("Request to uetgrade-server get all courses for " + studentCode + ": ");
-			Student student = uetGradeService.getStudentWithAllCourses(studentCode);
-			logger.debug("Result: " + student);
-			if (student == null) {
-				myMessengerService.sendTextMessage(userId,
-						getMessage("grade.text.std.current_processing", new Object[] { studentCode }));
-			}
-			else if (student.getCourses().size() == 0) {
-				myMessengerService.sendTextMessage(userId,
-                        getMessage("grade.text.std.no_course", new Object[] { studentCode }));
-			}
-			else {
-			    // notify number of courses have grades
-                long gradedCoursesCount = student.getCourses().stream()
-                        .filter(course -> course.getGradeUrl() != null)
-                        .count();
-
-				Message successMessage = myMessengerService.buildGenericMessage(
-						String.format("[%s]", student.getCode()),
-						getMessage("grade.text.std.has_course",
-								new Object[] { student.getName(), gradedCoursesCount, student.getCourses().size()}),
-						null, null);
-				myMessengerService.sendMessage(userId, successMessage);
-
-
-                // send course list
-                myMessengerService.sendCoursesList(userId, student);
-            }
-
+			doSendAllGrades(userId, studentCode);
 		});
 
 	}
+
+	private void doSendAllGrades(String userId, String studentCode) {
+        logger.debug("Request to uetgrade-server get all courses for " + studentCode + ": ");
+        Student student = uetGradeService.getStudentWithAllCourses(studentCode);
+        logger.debug("Result: " + student);
+        if (student == null) {
+            myMessengerService.sendTextMessage(userId,
+                    getMessage("grade.text.std.current_processing", new Object[] { studentCode }));
+        }
+        else if (student.getCourses().size() == 0) {
+            myMessengerService.sendTextMessage(userId,
+                    getMessage("grade.text.std.no_course", new Object[] { studentCode }));
+        }
+        else {
+            // notify number of courses have grades
+            long gradedCoursesCount = student.getCourses().stream()
+                    .filter(course -> course.getGradeUrl() != null)
+                    .count();
+
+            Message successMessage = myMessengerService.buildGenericMessage(
+                    String.format("[%s]", student.getCode()),
+                    getMessage("grade.text.std.has_course",
+                            new Object[] { student.getName(), gradedCoursesCount, student.getCourses().size()}),
+                    null, null);
+            myMessengerService.sendMessage(userId, successMessage);
+
+
+            // send course list
+            myMessengerService.sendCoursesList(userId, student);
+        }
+    }
 
 	private void processUnsubscribeGradeMessage(String userId, String payload) {
 		// get student code from postback if student dont match pattern notify error else
@@ -199,34 +213,33 @@ public class WebhookController {
 
 	private void processReqSubscribeGradeMessage(String userId) {
 		// ask user to enter student code for subscription
-        Message message = myMessengerService.buildGenericMessage(
-                getMessage("grade.ask_student_code.title", null),
-                getMessage("grade.ask_student_code.subtitle", null),
-                null, null);
-        myMessengerService.sendMessage(userId, message);
+        Message askMessage = myMessengerService.buildAskForStudentCodeSubGradesMessage();
+        myMessengerService.sendMessage(userId, askMessage);
 	}
 
 	private void processSubscribeGradeMessage(String userId, String textMessage) {
-        Message message;
+        Message infoMessage;
 
         // get student code from textMessage
         String[] payloadPieces = textMessage.split(" ");
         String studentCode = payloadPieces[payloadPieces.length - 1];
         // need validate for student code, maybe in case white characters is not expected (not space) :(
         if (!studentCode.matches("\\d{8}")) {
-			message = myMessengerService.buildGenericMessage(
+			infoMessage = myMessengerService.buildGenericMessage(
 					getMessage("text.title.fail", null),
 					getMessage("grade.text.sub.fail", null),
 					null, null);
+            myMessengerService.sendMessage(userId, infoMessage);
         }
         else {
             // check if pair (userId, studentCode) existed in grade_subscribers
             List<String> studentCodes = gradeSubscriberDao.findStudentCodesBySubscriber(userId);
             if (studentCodes.contains(studentCode)) {
-                message = myMessengerService.buildGenericMessage(
+                infoMessage = myMessengerService.buildGenericMessage(
                         getMessage("text.title.fail", null),
                         getMessage("grade.text.has_already_sub", new Object[] { studentCode }),
                         null, null);
+                myMessengerService.sendMessage(userId, infoMessage);
             }
             else {
                 // request subscribe to uetgrade-server for that student code
@@ -237,21 +250,26 @@ public class WebhookController {
 				logger.debug("Result: " + result);
                 if (result) { // success
                     gradeSubscriberDao.insertSubscriber(userId, studentCode);
-                    message = myMessengerService.buildGenericMessage(
+
+                    // notify success
+                    infoMessage = myMessengerService.buildGenericMessage(
                             getMessage("text.title.success", null),
                             getMessage("grade.text.sub.success", new Object[] { studentCode }),
                             null, null);
+                    myMessengerService.sendMessage(userId, infoMessage);
+
+                    // send all grades on the first time
+					doSendAllGrades(userId, studentCode);
                 }
                 else { // fail
-                    message = myMessengerService.buildGenericMessage(
+                    infoMessage = myMessengerService.buildGenericMessage(
                             getMessage("text.title.fail", null),
                             getMessage("grade.text.sub.fail", null),
                             null, null);
+                    myMessengerService.sendMessage(userId, infoMessage);
                 }
             }
         }
-        // send subscribe result message
-        myMessengerService.sendMessage(userId, message);
     }
 
 	private void processMenuNewsSubscriptionMessage(String userId) {

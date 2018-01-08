@@ -81,18 +81,30 @@ public class MyMessengerService {
 
 	public void sendGradeSubscriptionStatus(String recipient, List<String> subscribedStudentCodes) {
 		if (subscribedStudentCodes.size() == 0) {
-			Message message = new Message(getMessage("grade.text.status.empty", null));
+			/*Message message = new Message(getMessage("grade.text.status.empty", null));
 			QuickReply quickReply = new QuickReply(
 					getMessage("grade.qr.sub", null),
 					QR_SUBSCRIBE_GRADE_PAYLOAD);
 			message.addQuickReply(quickReply);
-			sendMessage(recipient, message);
+			sendMessage(recipient, message);*/
+
+            sendTextMessage(recipient, getMessage("grade.text.status.empty", null));
+            Message askMessage = buildAskForStudentCodeSubGradesMessage();
+			sendMessage(recipient, askMessage);
 		}
 		else {
 			// sendTextMessage(recipient, getMessage("grade.text.status.not_empty", null));
 			sendMessage(recipient, buildGradeSubscriptionInfoMessage(subscribedStudentCodes));
 		}
 	}
+
+	public Message buildAskForStudentCodeSubGradesMessage() {
+        Message message = buildGenericMessage(
+                getMessage("grade.ask_student_code.title", null),
+                getMessage("grade.ask_student_code.subtitle", null),
+                null, null);
+        return message;
+    }
 
 	public Message buildGradeSubscriptionInfoMessage(List<String> studentCodes) {
 		GenericTemplatePayload payload = new GenericTemplatePayload();
