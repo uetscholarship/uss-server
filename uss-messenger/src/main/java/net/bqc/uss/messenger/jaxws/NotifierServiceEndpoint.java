@@ -1,5 +1,7 @@
 package net.bqc.uss.messenger.jaxws;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.jws.WebMethod;
@@ -7,9 +9,12 @@ import javax.jws.WebService;
 
 import net.bqc.uss.messenger.dao.UserDao;
 import net.bqc.uss.messenger.model.User;
+import net.bqc.uss.messenger.task.NotifyTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 
 import com.restfb.types.send.Message;
@@ -31,19 +36,28 @@ public class NotifierServiceEndpoint extends SpringBeanAutowiringSupport impleme
     @Autowired
     private UserDao userDao;
 
+    @Autowired
+    private ApplicationContext applicationContext;
+
+    @Autowired
+    private TaskExecutor taskExecutor;
+
     @WebMethod
     public boolean notify(RssItem item) {
         try {
 			logger.info("Receive news notification request: {}", item.getLink());
 			
 	        // build new message
-            Message message = myMessengerService.buildNewsMessage(
-                    item.getTitle(), item.getLink());
+            Message message = myMessengerService.buildNewsMessage(item.getTitle(), item.getLink());
+            List<Message> messages = Collections.singletonList(message);
 
             // send to all subscribed users
             List<User> subscribedUsers = userDao.findAllSubscribedUsers();
             subscribedUsers.forEach(user -> {
-                myMessengerService.sendMessage(user.getFbId(), message);
+                NotifyTask notifyTask = (NotifyTask) applicationContext.getBean("notifyTask");
+                notifyTask.setFbId(user.getFbId());
+                notifyTask.setMessages(messages);
+                taskExecutor.execute(notifyTask);
             });
 
             return true;
