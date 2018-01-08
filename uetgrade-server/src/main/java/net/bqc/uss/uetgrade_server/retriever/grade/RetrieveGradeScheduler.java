@@ -46,7 +46,14 @@ public class RetrieveGradeScheduler {
         try {
             logger.debug("Retrieving new graded courses...");
             String rawGrades = retrieveGradeTask.getRawGrades();
-            List<Course> newGradedCourses = parse(rawGrades, true);
+
+            /**
+             * keep below line for the first run, to prepare courses data for database
+             * List<Course> newGradedCourses = parse(rawGrades, true);
+             */
+
+            // for scheduler, from the second run
+            List<Course> newGradedCourses = parse(rawGrades, false);
             logger.debug("New graded courses here: " + newGradedCourses);
 
             if (newGradedCourses.size() > 0) {

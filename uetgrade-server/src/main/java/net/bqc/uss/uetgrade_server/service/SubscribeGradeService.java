@@ -46,6 +46,19 @@ public class SubscribeGradeService {
 
             for (Course course : requestMappingCourses) {
                 Course existedCourse = courseRepository.findByCode(course.getCode());
+                String reqCourseCode = course.getCode();
+
+                // handle different names of the course between servers
+                if (existedCourse == null) {
+                    if (reqCourseCode.matches(".*\\s1$")) { // for case: INT3111 in Database and INT3111 1 for new course
+                        reqCourseCode = reqCourseCode.substring(0, reqCourseCode.length() - 2);
+                        existedCourse = courseRepository.findByCode(reqCourseCode);
+                    }
+                    else { // for case: INT3111 1 in Database and INT3111 for new course
+                        existedCourse = courseRepository.findByCode(String.format("%s 1", reqCourseCode));
+                    }
+                }
+
                 if (existedCourse == null) { // not exists in database
                     // add new course
                     Course newCourse = courseRepository.save(course);
