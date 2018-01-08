@@ -125,9 +125,12 @@ public class WebhookController {
 		else if (payload != null && payload.startsWith(MyMessengerService.BTN_UNSUBSCRIBE_GRADE_PAYLOAD)) {
 			processUnsubscribeGradeMessage(userId, payload);
 		}
-		else if (MyMessengerService.QR_GET_GRADES_PAYLOAD.equals(payload)) {
+		/*else if (MyMessengerService.QR_GET_GRADES_PAYLOAD.equals(payload)) {
 			processReqGetAllGradesMessage(userId);
-		}
+		}*/
+		else if (payload != null && payload.startsWith(MyMessengerService.BTN_GET_GRADES_PAYLOAD)) {
+            processReqGetGradesMessage(userId, payload);
+        }
 		else if (MyMessengerService.MN_GRADE_SUBSCRIPTION_PAYLOAD.equals(payload)) {
 			processMenuGradeSubscriptionMessage(userId);
 		}
@@ -136,7 +139,22 @@ public class WebhookController {
 		}
 	}
 
-	private void processReqGetAllGradesMessage(String userId) {
+    private void processReqGetGradesMessage(String userId, String payload) {
+        String[] payloadPieces = payload.split("_");
+        String studentCode = payloadPieces[payloadPieces.length - 1];
+        if (!studentCode.matches("\\d{8}") || !gradeSubscriberDao.isSubscribed(userId, studentCode)) {
+            Message errorMessage = myMessengerService.buildGenericMessage(
+                    getMessage("text.title.warning", null),
+                    getMessage("text.err", null),
+                    null, null);
+            myMessengerService.sendMessage(userId, errorMessage);
+        }
+        else {
+            myMessengerService.sendAllGrades(userId, studentCode);
+        }
+    }
+
+    private void processReqGetAllGradesMessage(String userId) {
 		// get all student codes of userId in grade_subscribers
 		// get grades for all student codes from uetgrade-server
 		//		if uetgrade-server responses not found student code, notify system is processing
@@ -144,41 +162,10 @@ public class WebhookController {
         //		else send grades as list for user
 		List<String> studentCodes = gradeSubscriberDao.findStudentCodesBySubscriber(userId);
 		studentCodes.stream().forEach(studentCode -> {
-			doSendAllGrades(userId, studentCode);
+			myMessengerService.sendAllGrades(userId, studentCode);
 		});
 
 	}
-
-	private void doSendAllGrades(String userId, String studentCode) {
-        logger.debug("Request to uetgrade-server get all courses for " + studentCode + ": ");
-        Student student = uetGradeService.getStudentWithAllCourses(studentCode);
-        logger.debug("Result: " + student);
-        if (student == null) {
-            myMessengerService.sendTextMessage(userId,
-                    getMessage("grade.text.std.current_processing", new Object[] { studentCode }));
-        }
-        else if (student.getCourses().size() == 0) {
-            myMessengerService.sendTextMessage(userId,
-                    getMessage("grade.text.std.no_course", new Object[] { studentCode }));
-        }
-        else {
-            // notify number of courses have grades
-            long gradedCoursesCount = student.getCourses().stream()
-                    .filter(course -> course.getGradeUrl() != null)
-                    .count();
-
-            Message successMessage = myMessengerService.buildGenericMessage(
-                    String.format("[%s]", student.getCode()),
-                    getMessage("grade.text.std.has_course",
-                            new Object[] { student.getName(), gradedCoursesCount, student.getCourses().size()}),
-                    null, null);
-            myMessengerService.sendMessage(userId, successMessage);
-
-
-            // send course list
-            myMessengerService.sendCoursesList(userId, student);
-        }
-    }
 
 	private void processUnsubscribeGradeMessage(String userId, String payload) {
 		// get student code from postback if student dont match pattern notify error else
@@ -259,7 +246,7 @@ public class WebhookController {
                     myMessengerService.sendMessage(userId, infoMessage);
 
                     // send all grades on the first time
-					doSendAllGrades(userId, studentCode);
+                    myMessengerService.sendAllGrades(userId, studentCode);
                 }
                 else { // fail
                     infoMessage = myMessengerService.buildGenericMessage(

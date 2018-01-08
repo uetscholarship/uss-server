@@ -7,8 +7,11 @@ import java.util.Set;
 import javax.annotation.PostConstruct;
 
 import com.restfb.types.send.*;
+import net.bqc.uss.service.UetGradeService;
 import net.bqc.uss.uetgrade_server.entity.Course;
 import net.bqc.uss.uetgrade_server.entity.Student;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
@@ -22,6 +25,8 @@ import com.restfb.types.User;
 @Service
 public class MyMessengerService {
 
+    private static final Logger logger = LoggerFactory.getLogger(MyMessengerService.class);
+
 	public static final String MN_NEWS_SUBSCRIPTION_PAYLOAD = "MN_NEWS_SUBSCRIPTION_PAYLOAD";
 	public static final String QR_SUBSCRIBE_NEWS_PAYLOAD = "QR_SUBSCRIBE_NEWS_PAYLOAD";
 	public static final String QR_UNSUBSCRIBE_NEWS_PAYLOAD = "QR_UNSUBSCRIBE_NEWS_PAYLOAD";
@@ -30,6 +35,7 @@ public class MyMessengerService {
 	public static final String QR_SUBSCRIBE_GRADE_PAYLOAD = "QR_SUBSCRIBE_GRADE_PAYLOAD";
 	public static final String QR_GET_GRADES_PAYLOAD = "QR_GET_GRADES_PAYLOAD";
 	public static final String BTN_UNSUBSCRIBE_GRADE_PAYLOAD = "BTN_UNSUBSCRIBE_GRADE_PAYLOAD";
+	public static final String BTN_GET_GRADES_PAYLOAD = "BTN_GET_GRADES_PAYLOAD";
 
 	@Value("${fb.page.token}")
 	private String PAGE_TOKEN;
@@ -38,6 +44,9 @@ public class MyMessengerService {
 	private MessageSource messageSource;
 	
 	private FacebookClient pageClient;
+
+    @Autowired
+    private UetGradeService uetGradeService;
 	
 	@PostConstruct
 	public void init() {
@@ -98,6 +107,37 @@ public class MyMessengerService {
 		}
 	}
 
+    public void sendAllGrades(String userId, String studentCode) {
+        logger.debug("Request to uetgrade-server get all courses for " + studentCode + ": ");
+        Student student = uetGradeService.getStudentWithAllCourses(studentCode);
+        logger.debug("Result: " + student);
+        if (student == null) {
+            sendTextMessage(userId,
+                    getMessage("grade.text.std.current_processing", new Object[] { studentCode }));
+        }
+        else if (student.getCourses().size() == 0) {
+            sendTextMessage(userId,
+                    getMessage("grade.text.std.no_course", new Object[] { studentCode }));
+        }
+        else {
+            // notify number of courses have grades
+            long gradedCoursesCount = student.getCourses().stream()
+                    .filter(course -> course.getGradeUrl() != null)
+                    .count();
+
+            Message successMessage = buildGenericMessage(
+                    String.format("[%s]", student.getCode()),
+                    getMessage("grade.text.std.has_course",
+                            new Object[] { student.getName(), gradedCoursesCount, student.getCourses().size()}),
+                    null, null);
+            sendMessage(userId, successMessage);
+
+
+            // send course list
+            sendCoursesList(userId, student);
+        }
+    }
+
 	public Message buildAskForStudentCodeSubGradesMessage() {
         Message message = buildGenericMessage(
                 getMessage("grade.ask_student_code.title", null),
@@ -110,9 +150,9 @@ public class MyMessengerService {
 		GenericTemplatePayload payload = new GenericTemplatePayload();
 		TemplateAttachment attachment = new TemplateAttachment(payload);
 		// quick replies to get all grades for all student codes
-		QuickReply qrGetGrades = new QuickReply(
+		/*QuickReply qrGetGrades = new QuickReply(
 				getMessage("grade.qr.get_grades", null),
-				QR_GET_GRADES_PAYLOAD);
+				QR_GET_GRADES_PAYLOAD);*/
 		QuickReply qrSubscribeMoreGrade = new QuickReply(
 				getMessage("grade.qr.sub", null),
 				QR_SUBSCRIBE_GRADE_PAYLOAD);
@@ -120,14 +160,17 @@ public class MyMessengerService {
 		studentCodes.forEach(studentCode -> {
 			Bubble bubble = new Bubble(getMessage("grade.std.title", new Object[] {studentCode }));  // MSSV: 1402xxxx
 			bubble.setSubtitle(getMessage("grade.std.content", null));
-			PostbackButton postbackButton = new PostbackButton(getMessage("grade.btn.unsub", null),
+			PostbackButton getGradesPostbackButton = new PostbackButton(getMessage("grade.btn.get_grades", null),
+                    BTN_GET_GRADES_PAYLOAD + "_" + studentCode); // Payload will be: BTN_GET_GRADES_PAYLOAD_1402xxxx
+			PostbackButton unsubscribePostbackButton = new PostbackButton(getMessage("grade.btn.unsub", null),
 					BTN_UNSUBSCRIBE_GRADE_PAYLOAD + "_" + studentCode); // Payload will be: BTN_UNSUBSCRIBE_GRADE_PAYLOAD_1402xxxx
-			bubble.addButton(postbackButton);
+            bubble.addButton(getGradesPostbackButton);
+			bubble.addButton(unsubscribePostbackButton);
 			payload.addBubble(bubble);
 		});
 
 		Message message = new Message(attachment);
-		message.addQuickReply(qrGetGrades);
+		/*message.addQuickReply(qrGetGrades);*/
 		message.addQuickReply(qrSubscribeMoreGrade);
 		return message;
 	}
