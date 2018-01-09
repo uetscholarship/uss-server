@@ -60,26 +60,26 @@ public class SubscribeGradeService {
                 if (existedCourse == null) {
                     Matcher m = p.matcher(reqCourseCode);
                     if (m.find()) { // EMA 3084 for new course, but EMA3084 in database
-                        logger.debug("Requested code: ", reqCourseCode);
+                        logger.debug("Requested code: {}", reqCourseCode);
                         reqCourseCode = m.replaceFirst("$1$3");
-                        logger.debug("Normalized code: ", reqCourseCode);
+                        logger.debug("Normalized code: {}", reqCourseCode);
                         existedCourse = courseRepository.findByCode(reqCourseCode);
-                        logger.debug("Course after: ", existedCourse);
+                        logger.debug("Course after: {}", existedCourse);
                     }
                 }
 
                 if (existedCourse == null) {
                     if (reqCourseCode.matches(".*\\s1$")) { // for case: INT3111 in Database and INT3111 1 for new course
                         reqCourseCode = reqCourseCode.substring(0, reqCourseCode.length() - 2);
-                        logger.debug("Normalized code: ", reqCourseCode);
+                        logger.debug("Normalized code again: {}", reqCourseCode);
                         existedCourse = courseRepository.findByCode(reqCourseCode);
                     }
                     else { // for case: INT3111 1 in Database and INT3111 for new course
                         reqCourseCode = String.format("%s 1", reqCourseCode);
-                        logger.debug("Normalized code: ", reqCourseCode);
+                        logger.debug("Normalized code again: {}", reqCourseCode);
                         existedCourse = courseRepository.findByCode(reqCourseCode);
                     }
-                    logger.debug("Course after: ", existedCourse);
+                    logger.debug("Course after again: {}", existedCourse);
                 }
 
                 if (existedCourse == null) { // not exists in database
