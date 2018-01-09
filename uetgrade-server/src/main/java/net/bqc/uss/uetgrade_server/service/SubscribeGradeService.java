@@ -5,14 +5,22 @@ import net.bqc.uss.uetgrade_server.entity.Student;
 import net.bqc.uss.uetgrade_server.repository.CourseRepository;
 import net.bqc.uss.uetgrade_server.repository.StudentRepository;
 import net.bqc.uss.uetgrade_server.retriever.RetrieveCourseTask;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class SubscribeGradeService {
+
+    private static final Logger logger = LoggerFactory.getLogger(SubscribeGradeService.class);
+
+    private static final Pattern p = Pattern.compile("^([A-Z]{3})(\\s)(\\d{4}.*)"); // catch EMA 3048, EMA 3046 2
 
     @Autowired
     private StudentRepository studentRepository;
@@ -46,17 +54,32 @@ public class SubscribeGradeService {
 
             for (Course course : requestMappingCourses) {
                 Course existedCourse = courseRepository.findByCode(course.getCode());
-                String reqCourseCode = course.getCode();
+                String reqCourseCode = course.getCode().trim();
 
                 // handle different names of the course between servers
                 if (existedCourse == null) {
+                    Matcher m = p.matcher(reqCourseCode);
+                    if (m.find()) { // EMA 3084 for new course, but EMA3084 in database
+                        logger.debug("Requested code: ", reqCourseCode);
+                        reqCourseCode = m.replaceFirst("$1$3");
+                        logger.debug("Normalized code: ", reqCourseCode);
+                        existedCourse = courseRepository.findByCode(reqCourseCode);
+                        logger.debug("Course after: ", existedCourse);
+                    }
+                }
+
+                if (existedCourse == null) {
                     if (reqCourseCode.matches(".*\\s1$")) { // for case: INT3111 in Database and INT3111 1 for new course
                         reqCourseCode = reqCourseCode.substring(0, reqCourseCode.length() - 2);
+                        logger.debug("Normalized code: ", reqCourseCode);
                         existedCourse = courseRepository.findByCode(reqCourseCode);
                     }
                     else { // for case: INT3111 1 in Database and INT3111 for new course
-                        existedCourse = courseRepository.findByCode(String.format("%s 1", reqCourseCode));
+                        reqCourseCode = String.format("%s 1", reqCourseCode);
+                        logger.debug("Normalized code: ", reqCourseCode);
+                        existedCourse = courseRepository.findByCode(reqCourseCode);
                     }
+                    logger.debug("Course after: ", existedCourse);
                 }
 
                 if (existedCourse == null) { // not exists in database
@@ -74,6 +97,15 @@ public class SubscribeGradeService {
         catch (Exception e) {
             e.printStackTrace();
             return false;
+        }
+    }
+
+    public static void main(String args[]) {
+        Pattern p = Pattern.compile("^([A-Z]{3})(\\s)(\\d{4}.*)");
+        Matcher m = p.matcher("EMA3084 1".trim());
+        if (m.find()) {
+            System.out.println(true);
+            System.out.println(m.replaceFirst("$1$3"));
         }
     }
 
