@@ -44,7 +44,7 @@ public class RetrieveGradeScheduler {
 //	@Scheduled(cron = "0 */1 * * * *", zone = "GMT+7")
     public void retrieveNewGrades() {
         try {
-            logger.debug("Retrieving new graded courses...");
+            logger.debug("[{}] Retrieving new graded courses...", Thread.currentThread().getName());
             String rawGrades = retrieveGradeTask.getRawGrades();
 
             /**
@@ -54,24 +54,26 @@ public class RetrieveGradeScheduler {
 
             // for scheduler, from the second run
             List<Course> newGradedCourses = parse(rawGrades, false);
-            logger.debug("New graded courses here: " + newGradedCourses);
+            logger.debug("[{}] New graded courses here: {}", Thread.currentThread().getName(), newGradedCourses);
 
             if (newGradedCourses.size() > 0) {
                 // filter, only keep students who are subscribing to get grades
-                newGradedCourses.forEach(course -> {
-                    Set<Student> filteredStudents = course.getStudents().stream()
+                newGradedCourses.stream()
+                    .filter(course -> course.getStudents() != null)
+                    .forEach(course -> {
+                        Set<Student> filteredStudents = course.getStudents().stream()
                             .filter(student -> {
                                 student.setCourses(null);
                                 return student.isSubscribed();
                             })
                             .collect(Collectors.toSet());
-                    course.setStudents(filteredStudents);
-                });
+                        course.setStudents(filteredStudents);
+                    });
 
-                logger.debug("Notifying for Messenger service...");
+                logger.debug("[{}] Notifying for Messenger service...", Thread.currentThread().getName());
                 // notify new graded course for messenger
                 boolean result = messengerServiceProxy.notifyNewGradedCourses(newGradedCourses);
-                logger.debug("Result: {}", result);
+                logger.debug("[{}] Result: {}", Thread.currentThread().getName(), result);
 
             }
         }
