@@ -19,7 +19,7 @@ spring:
 
     database-platform: org.hibernate.dialect.MySQLCustomDialect
   datasource:
-    url: jdbc:mysql://localhost:3306/uetgrade?useSSL=false&useUnicode=true&characterEncoding=utf-8
+    url: jdbc:mysql://${UET_GRADE_DB_HOST}:3306/uetgrade?useSSL=false&useUnicode=true&characterEncoding=utf-8
     username: ${UET_GRADE_DB_USERNAME}
     password: ${UET_GRADE_DB_PASSWORD}
     driver-class-name: com.mysql.jdbc.Driver
