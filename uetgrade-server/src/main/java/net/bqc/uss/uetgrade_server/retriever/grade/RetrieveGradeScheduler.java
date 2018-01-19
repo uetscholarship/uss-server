@@ -15,9 +15,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -40,12 +38,15 @@ public class RetrieveGradeScheduler {
     @Autowired
     private MessengerService messengerServiceProxy;
 
-    @Scheduled(cron = "0 */15 6-19 * * MON-FRI", zone = "GMT+7")
-//	@Scheduled(cron = "0 */1 * * * *", zone = "GMT+7")
+    private Map<String, Integer> gradedCoursesCache = new HashMap<>();
+
+//    @Scheduled(cron = "0 */15 6-19 * * MON-FRI", zone = "GMT+7")
+	@Scheduled(cron = "0 */1 * * * *", zone = "GMT+7")
     public void retrieveNewGrades() {
         try {
             logger.debug("[{}] Retrieving new graded courses...", Thread.currentThread().getName());
             String rawGrades = retrieveGradeTask.getRawGrades();
+            logger.debug("[{}] Done getting raw grades!", Thread.currentThread().getName());
 
             /**
              * keep below line for the first run, to prepare courses data for database
@@ -53,6 +54,7 @@ public class RetrieveGradeScheduler {
              */
 
             // for scheduler, from the second run
+            logger.debug("[{}] Parsing raw grades...", Thread.currentThread().getName());
             List<Course> newGradedCourses = parse(rawGrades, false);
             logger.debug("[{}] New graded courses here: {}", Thread.currentThread().getName(), newGradedCourses);
 
@@ -100,22 +102,29 @@ public class RetrieveGradeScheduler {
                 gradeUrl = (gradeUrl != null && gradeUrl.trim().isEmpty())
                         ? null : (String.format("%s/%s", gradeHost, gradeUrl));
 
-                if (gradeUrl != null) { // graded courses
-                    Course existedCourse = courseRepository.findByCode(courseCode);
-                    if (existedCourse != null) {
-                        if (existedCourse.getGradeUrl() == null) { // exist db but not graded before
-                            courseRepository.updateGradeUrlByCode(courseCode, gradeUrl);
-                            // this is the course we have to notify user as a new grade course
-                            existedCourse.setGradeUrl(gradeUrl);
-                            newGradedCourses.add(existedCourse);
+                if (gradeUrl != null) { // graded courses and not in graded course cache
+                    if (!gradedCoursesCache.containsKey(courseCode)) {
+                        Course existedCourse = courseRepository.findByCode(courseCode);
+                        if (existedCourse != null) {
+                            if (existedCourse.getGradeUrl() == null) { // exist db but not graded before
+                                courseRepository.updateGradeUrlByCode(courseCode, gradeUrl);
+                                // this is the course we have to notify user as a new grade course
+                                existedCourse.setGradeUrl(gradeUrl);
+                                newGradedCourses.add(existedCourse);
+                            }
+
+                            // add course to graded course cache, and do not check after
+                            gradedCoursesCache.put(existedCourse.getCode(), 1);
+                        } else { // graded course and not exist in db
+                            Course newCourse = new Course(courseCode, courseName, gradeUrl);
+                            courseRepository.save(newCourse);
+                            // course with grade but not exist in db, of course it is a new graded course
+                            newGradedCourses.add(newCourse);
                         }
                     }
-                    else { // graded course and not exist in db
-                        Course newCourse = new Course(courseCode, courseName, gradeUrl);
-                        courseRepository.save(newCourse);
-                        // course with grade but not exist in db, of course it is a new graded course
-                        newGradedCourses.add(newCourse);
-                    }
+                    /*else {
+                        logger.debug("[{}] Ignore course {}", Thread.currentThread().getName(), courseCode);
+                    }*/
                 }
                 else if (saveAllCourses) { // for first run, save all course include not-graded course
                     Course existedCourse = courseRepository.findByCode(courseCode);
