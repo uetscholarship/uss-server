@@ -32,8 +32,9 @@ public class MyMessengerService {
 	public static final String QR_UNSUBSCRIBE_NEWS_PAYLOAD = "QR_UNSUBSCRIBE_NEWS_PAYLOAD";
 
 	public static final String MN_GRADE_SUBSCRIPTION_PAYLOAD = "MN_GRADE_SUBSCRIPTION_PAYLOAD";
-	public static final String QR_SUBSCRIBE_GRADE_PAYLOAD = "QR_SUBSCRIBE_GRADE_PAYLOAD";
-	public static final String QR_GET_GRADES_PAYLOAD = "QR_GET_GRADES_PAYLOAD";
+	public static final String MN_GET_GRADES_PAYLOAD = "MN_GET_GRADES_PAYLOAD";
+	public static final String MN_SUBSCRIBE_GRADE_PAYLOAD = "MN_SUBSCRIBE_GRADE_PAYLOAD";
+
 	public static final String BTN_UNSUBSCRIBE_GRADE_PAYLOAD = "BTN_UNSUBSCRIBE_GRADE_PAYLOAD";
 	public static final String BTN_GET_GRADES_PAYLOAD = "BTN_GET_GRADES_PAYLOAD";
 
@@ -93,19 +94,11 @@ public class MyMessengerService {
 
 	public void sendGradeSubscriptionStatus(String recipient, List<String> subscribedStudentCodes) {
 		if (subscribedStudentCodes.size() == 0) {
-			/*Message message = new Message(getMessage("grade.text.status.empty", null));
-			QuickReply quickReply = new QuickReply(
-					getMessage("grade.qr.sub", null),
-					QR_SUBSCRIBE_GRADE_PAYLOAD);
-			message.addQuickReply(quickReply);
-			sendMessage(recipient, message);*/
-
             sendTextMessage(recipient, getMessage("grade.text.status.empty", null));
             Message askMessage = buildAskForStudentCodeSubGradesMessage();
 			sendMessage(recipient, askMessage);
 		}
 		else {
-			// sendTextMessage(recipient, getMessage("grade.text.status.not_empty", null));
 			sendMessage(recipient, buildGradeSubscriptionInfoMessage(subscribedStudentCodes));
 		}
 	}
@@ -152,13 +145,6 @@ public class MyMessengerService {
 	public Message buildGradeSubscriptionInfoMessage(List<String> studentCodes) {
 		GenericTemplatePayload payload = new GenericTemplatePayload();
 		TemplateAttachment attachment = new TemplateAttachment(payload);
-		// quick replies to get all grades for all student codes
-		/*QuickReply qrGetGrades = new QuickReply(
-				getMessage("grade.qr.get_grades", null),
-				QR_GET_GRADES_PAYLOAD);*/
-		QuickReply qrSubscribeMoreGrade = new QuickReply(
-				getMessage("grade.qr.sub", null),
-				QR_SUBSCRIBE_GRADE_PAYLOAD);
 
 		studentCodes.forEach(studentCode -> {
 			Bubble bubble = new Bubble(getMessage("grade.std.title", new Object[] {studentCode }));  // MSSV: 1402xxxx
@@ -173,8 +159,6 @@ public class MyMessengerService {
 		});
 
 		Message message = new Message(attachment);
-		/*message.addQuickReply(qrGetGrades);*/
-		message.addQuickReply(qrSubscribeMoreGrade);
 		return message;
 	}
 	

@@ -11,7 +11,6 @@ import net.bqc.uss.messenger.dao.UserDao;
 import net.bqc.uss.messenger.model.User;
 import net.bqc.uss.messenger.service.MyMessengerService;
 import net.bqc.uss.service.UetGradeService;
-import net.bqc.uss.uetgrade_server.entity.Student;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -119,15 +118,15 @@ public class WebhookController {
 		else if (MyMessengerService.QR_UNSUBSCRIBE_NEWS_PAYLOAD.equals(payload)) {
 			processUnSubscribeNewsMessage(userId);
 		}
-		else if (MyMessengerService.QR_SUBSCRIBE_GRADE_PAYLOAD.equals(payload)) {
+		else if (MyMessengerService.MN_SUBSCRIBE_GRADE_PAYLOAD.equals(payload)) {
 			processReqSubscribeGradeMessage(userId);
 		}
 		else if (payload != null && payload.startsWith(MyMessengerService.BTN_UNSUBSCRIBE_GRADE_PAYLOAD)) {
 			processUnsubscribeGradeMessage(userId, payload);
 		}
-		/*else if (MyMessengerService.QR_GET_GRADES_PAYLOAD.equals(payload)) {
+		else if (MyMessengerService.MN_GET_GRADES_PAYLOAD.equals(payload)) {
 			processReqGetAllGradesMessage(userId);
-		}*/
+		}
 		else if (payload != null && payload.startsWith(MyMessengerService.BTN_GET_GRADES_PAYLOAD)) {
             processReqGetGradesMessage(userId, payload);
         }
@@ -166,15 +165,14 @@ public class WebhookController {
     }
 
     private void processReqGetAllGradesMessage(String userId) {
-		// get all student codes of userId in grade_subscribers
-		// get grades for all student codes from uetgrade-server
-		//		if uetgrade-server responses not found student code, notify system is processing
-        //      else if uetgrade-server responses not found course for student code, notify this student has no courses
-        //		else send grades as list for user
 		List<String> studentCodes = gradeSubscriberDao.findStudentCodesBySubscriber(userId);
-		studentCodes.stream().forEach(studentCode -> {
-			myMessengerService.sendAllGrades(userId, studentCode);
-		});
+		if (studentCodes.size() == 1) { // display grades for single-subscriber
+		    processReqGetGradesMessage(userId, String.format("%s_%s",
+                    MyMessengerService.BTN_GET_GRADES_PAYLOAD, studentCodes.get(0)));
+        }
+		else { // do same as processing grade subscription message
+            myMessengerService.sendGradeSubscriptionStatus(userId, studentCodes);
+        }
 
 	}
 
@@ -238,6 +236,9 @@ public class WebhookController {
                         getMessage("grade.text.has_already_sub", new Object[] { studentCode }),
                         null, null);
                 myMessengerService.sendMessage(userId, infoMessage);
+                // hint them to click on menu to get grade for subscribed student codes
+                myMessengerService.sendTextMessage(userId,
+                        getMessage("grade.text.has_already_sub.support", null));
             }
             else {
                 // request subscribe to uetgrade-server for that student code
