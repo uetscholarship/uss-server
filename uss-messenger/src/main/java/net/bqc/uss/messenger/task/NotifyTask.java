@@ -1,5 +1,6 @@
 package net.bqc.uss.messenger.task;
 
+import com.restfb.exception.FacebookException;
 import com.restfb.types.send.Message;
 import net.bqc.uss.messenger.service.MyMessengerService;
 import org.slf4j.Logger;
@@ -32,10 +33,18 @@ public class NotifyTask implements Runnable {
 
     @Override
     public void run() {
-        logger.debug("Executing notifyTask [{}] -> [{}]",
-                Thread.currentThread().getName(),
-                this.fbId);
-        messages.forEach(message -> myMessengerService.sendMessage(fbId, message));
-        logger.debug("Done notifyTask [{}]", Thread.currentThread().getName());
+        try {
+            logger.debug("Executing notifyTask [{}] -> [{}]",
+                    Thread.currentThread().getName(),
+                    this.fbId);
+            messages.forEach(message -> myMessengerService.sendMessage(fbId, message));
+            logger.debug("Done notifyTask [{}]", Thread.currentThread().getName());
+        }
+        catch (FacebookException e) {
+            logger.debug("Facebook Exception: {}" + e.getMessage());
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
