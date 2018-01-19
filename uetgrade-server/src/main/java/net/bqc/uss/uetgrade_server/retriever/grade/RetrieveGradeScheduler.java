@@ -40,8 +40,8 @@ public class RetrieveGradeScheduler {
 
     private Map<String, Integer> gradedCoursesCache = new HashMap<>();
 
-//    @Scheduled(cron = "0 */15 6-19 * * MON-FRI", zone = "GMT+7")
-	@Scheduled(cron = "0 */1 * * * *", zone = "GMT+7")
+    @Scheduled(cron = "0 */15 6-19 * * MON-FRI", zone = "GMT+7")
+//	@Scheduled(cron = "0 */1 * * * *", zone = "GMT+7")
     public void retrieveNewGrades() {
         try {
             logger.debug("[{}] Retrieving new graded courses...", Thread.currentThread().getName());
