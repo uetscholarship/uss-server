@@ -71,6 +71,10 @@ public class WebhookController {
 			List<MessagingItem> messagingItems = data.getEntryList().get(0).getMessaging();
 			for (MessagingItem messagingItem : messagingItems) {
 				userId = messagingItem.getSender().getId();
+
+				// send typing on, to let user know bot works
+				myMessengerService.sendSenderAction(userId, MyMessengerService.SENDER_ACTION_TYPING_ON);
+
 				PostbackItem postbackItem = messagingItem.getPostback();
 
 				MessageItem messageItem = messagingItem.getMessage();

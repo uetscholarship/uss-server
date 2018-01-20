@@ -40,6 +40,8 @@ public class MyMessengerService {
 
 	public static final String BTN_GET_STARTED_PAYLOAD = "BTN_GET_STARTED_PAYLOAD";
 
+	public static final String SENDER_ACTION_TYPING_ON = "typing_on";
+
 
 	@Value("${fb.page.token}")
 	private String PAGE_TOKEN;
@@ -60,12 +62,19 @@ public class MyMessengerService {
 	public User getUserInformation(String userId) {
 		return pageClient.fetchObject(userId, User.class);
 	}
-	
+
 	public void sendMessage(String recipient, Message message) {
 		pageClient.publish("me/messages",
 				SendResponse.class,
 				Parameter.with("recipient", new IdMessageRecipient(recipient)),
 				Parameter.with("message", message));
+	}
+
+	public void sendSenderAction(String recipient, String senderAction) {
+		pageClient.publish("me/messages",
+				SendResponse.class,
+				Parameter.with("recipient", new IdMessageRecipient(recipient)),
+				Parameter.with("sender_action", senderAction));
 	}
 	
 	public void sendTextMessage(String recipient, String message) {
