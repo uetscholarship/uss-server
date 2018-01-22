@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -40,8 +41,9 @@ public class RetrieveGradeScheduler {
 
     private Map<String, Integer> gradedCoursesCache = new HashMap<>();
 
+    @Async
     @Scheduled(cron = "0 */15 6-19 * * MON-FRI", zone = "GMT+7")
-//	@Scheduled(cron = "0 */1 * * * *", zone = "GMT+7")
+//	@Scheduled(cron = "*/5 * * * * *", zone = "GMT+7")
     public void retrieveNewGrades() {
         try {
             logger.debug("[{}] Retrieving new graded courses...", Thread.currentThread().getName());
@@ -61,16 +63,16 @@ public class RetrieveGradeScheduler {
             if (newGradedCourses.size() > 0) {
                 // filter, only keep students who are subscribing to get grades
                 newGradedCourses.stream()
-                    .filter(course -> course.getStudents() != null)
-                    .forEach(course -> {
-                        Set<Student> filteredStudents = course.getStudents().stream()
-                            .filter(student -> {
-                                student.setCourses(null);
-                                return student.isSubscribed();
-                            })
-                            .collect(Collectors.toSet());
-                        course.setStudents(filteredStudents);
-                    });
+                        .filter(course -> course.getStudents() != null)
+                        .forEach(course -> {
+                            Set<Student> filteredStudents = course.getStudents().stream()
+                                    .filter(student -> {
+                                        student.setCourses(null);
+                                        return student.isSubscribed();
+                                    })
+                                    .collect(Collectors.toSet());
+                            course.setStudents(filteredStudents);
+                        });
 
                 logger.debug("[{}] Notifying for Messenger service...", Thread.currentThread().getName());
                 // notify new graded course for messenger
@@ -79,7 +81,7 @@ public class RetrieveGradeScheduler {
 
             }
         }
-        catch (IOException e) {
+        catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -115,7 +117,8 @@ public class RetrieveGradeScheduler {
 
                             // add course to graded course cache, and do not check after
                             gradedCoursesCache.put(existedCourse.getCode(), 1);
-                        } else { // graded course and not exist in db
+                        }
+                        else { // graded course and not exist in db
                             Course newCourse = new Course(courseCode, courseName, gradeUrl);
                             courseRepository.save(newCourse);
                             // course with grade but not exist in db, of course it is a new graded course
