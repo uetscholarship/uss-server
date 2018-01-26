@@ -10,15 +10,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.cache.annotation.CacheDefaults;
+import javax.cache.annotation.CacheResult;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
-public class SubscribeGradeService {
+@CacheDefaults(cacheName = "gradeCache")
+public class GradeService {
 
-    private static final Logger logger = LoggerFactory.getLogger(SubscribeGradeService.class);
+    private static final Logger logger = LoggerFactory.getLogger(GradeService.class);
 
     private static final Pattern p = Pattern.compile("^([A-Z]{3})(\\s)(\\d{4}.*)"); // catch EMA 3048, EMA 3046 2
 
@@ -30,6 +33,24 @@ public class SubscribeGradeService {
 
     @Autowired
     private RetrieveCourseTask courseRetriever;
+
+    @CacheResult
+    public Student getStudentWithAllCourses(String studentCode) {
+        try {
+            logger.debug("Get courses for {} from database", studentCode);
+            Student student = studentRepository.findByCode(studentCode);
+            if (student != null) {
+                // set students set null for each courses in order to prevent cyclic problem of JAXB
+                student.getCourses().stream().forEach(course -> course.setStudents(null));
+                return student;
+            }
+            return null;
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 
     public boolean subscribe(String studentCode) {
         try {
