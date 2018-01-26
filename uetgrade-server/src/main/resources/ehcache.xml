@@ -12,7 +12,7 @@
     <cache-template name="heap-cache">
         <listeners>
             <listener>
-                <class>net.bqc.uss.uetgrade_server.cache.EventLogger</class>
+                <class>net.bqc.uss.uetgrade_server.cache.GradeCacheEventLogger</class>
                 <event-firing-mode>ASYNCHRONOUS</event-firing-mode>
                 <event-ordering-mode>UNORDERED</event-ordering-mode>
                 <events-to-fire-on>CREATED</events-to-fire-on>

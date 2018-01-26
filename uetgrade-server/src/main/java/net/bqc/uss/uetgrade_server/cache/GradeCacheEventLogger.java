@@ -5,9 +5,9 @@ import org.ehcache.event.CacheEventListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class EventLogger implements CacheEventListener<Object, Object> {
+public class GradeCacheEventLogger implements CacheEventListener<Object, Object> {
 
-    public static final Logger logger = LoggerFactory.getLogger(EventLogger.class);
+    public static final Logger logger = LoggerFactory.getLogger(GradeCacheEventLogger.class);
 
     @Override
     public void onEvent(CacheEvent<?, ?> cacheEvent) {
