@@ -7,19 +7,7 @@
         <jsr107:defaults enable-management="true" enable-statistics="true"/>
     </service>
 
-    <cache alias="gradeCache" uses-template="object-cache"/>
-
-    <cache-template name="simple-cache">
-        <expiry>
-            <none/>
-        </expiry>
-        <resources>
-            <heap>500</heap>
-            <offheap unit="MB">10</offheap>
-        </resources>
-    </cache-template>
-
-    <cache-template name="object-cache">
+    <cache alias="gradeCache">
         <listeners>
             <listener>
                 <class>net.bqc.uss.uetgrade_server.cache.CacheEventLogger</class>
@@ -36,5 +24,12 @@
             <heap>100</heap>
             <offheap unit="MB">20</offheap>
         </resources>
-    </cache-template>
+    </cache>
+
+    <cache alias="gradedCourseCodeCache">
+        <resources>
+            <heap>500</heap>
+            <offheap unit="MB">10</offheap>
+        </resources>
+    </cache>
 </config>
