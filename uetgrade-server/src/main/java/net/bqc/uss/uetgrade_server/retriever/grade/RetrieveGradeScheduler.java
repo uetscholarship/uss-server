@@ -15,8 +15,11 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
 @Component
@@ -39,11 +42,19 @@ public class RetrieveGradeScheduler {
     @Autowired
     private MessengerService messengerServiceProxy;
 
-    private Map<String, Integer> gradedCoursesCache = new HashMap<>();
+    private ConcurrentMap<String, Integer> gradedCoursesCache = new ConcurrentHashMap<>();
+
+    @PostConstruct
+    public void setupCache() {
+        logger.debug("[{}] Setting up cache for scheduler...", Thread.currentThread().getName());
+        Set<String> gradedCourseCodes = courseRepository.findCodeByGradeUrlNotNull();
+        gradedCourseCodes.forEach(courseCode -> gradedCoursesCache.put(courseCode, 1));
+        logger.debug("[{}] Done cache setup!", Thread.currentThread().getName());
+    }
 
     @Async
-    @Scheduled(cron = "0 */15 6-19 * * MON-FRI", zone = "GMT+7")
-//	@Scheduled(cron = "*/5 * * * * *", zone = "GMT+7")
+//    @Scheduled(cron = "0 */15 6-19 * * MON-FRI", zone = "GMT+7")
+	@Scheduled(cron = "*/5 * * * * *", zone = "GMT+7")
     public void retrieveNewGrades() {
         try {
             logger.debug("[{}] Retrieving new graded courses...", Thread.currentThread().getName());
@@ -60,7 +71,7 @@ public class RetrieveGradeScheduler {
             List<Course> newGradedCourses = parse(rawGrades, false);
             logger.debug("[{}] New graded courses here: {}", Thread.currentThread().getName(), newGradedCourses);
 
-            if (newGradedCourses.size() > 0) {
+            /*if (newGradedCourses.size() > 0) {
                 // filter, only keep students who are subscribing to get grades
                 newGradedCourses.stream()
                         .filter(course -> course.getStudents() != null)
@@ -79,7 +90,7 @@ public class RetrieveGradeScheduler {
                 boolean result = messengerServiceProxy.notifyNewGradedCourses(newGradedCourses);
                 logger.debug("[{}] Result: {}", Thread.currentThread().getName(), result);
 
-            }
+            }*/
         }
         catch (Exception e) {
             e.printStackTrace();

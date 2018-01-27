@@ -28,26 +28,4 @@
 
         <heap>100</heap>
     </cache>
-
-    <cache alias="gradedCourseCodeCache">
-        <expiry>
-            <none/>
-        </expiry>
-
-        <listeners>
-            <listener>
-                <class>net.bqc.uss.uetgrade_server.cache.CacheEventLogger</class>
-                <event-firing-mode>ASYNCHRONOUS</event-firing-mode>
-                <event-ordering-mode>UNORDERED</event-ordering-mode>
-                <events-to-fire-on>CREATED</events-to-fire-on>
-                <events-to-fire-on>UPDATED</events-to-fire-on>
-                <events-to-fire-on>EXPIRED</events-to-fire-on>
-                <events-to-fire-on>REMOVED</events-to-fire-on>
-                <events-to-fire-on>EVICTED</events-to-fire-on>
-            </listener>
-        </listeners>
-
-        <heap>500</heap>
-
-    </cache>
 </config>
