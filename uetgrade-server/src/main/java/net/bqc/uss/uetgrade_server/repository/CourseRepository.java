@@ -7,10 +7,14 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Set;
+
 public interface CourseRepository extends CrudRepository<Course, Integer> {
 
     Course findByCode(String code);
-    boolean existsByCode(String code);
+
+    @Query("select c.code from Course c where c.gradeUrl is not null")
+    Set<String> findCodeByGradeUrlNotNull();
 
     @Query("update Course c set c.gradeUrl = ?2 where c.code = ?1")
     @Modifying
