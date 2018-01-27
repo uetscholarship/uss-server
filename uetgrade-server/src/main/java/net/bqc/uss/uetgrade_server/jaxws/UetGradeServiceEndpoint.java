@@ -34,6 +34,10 @@ public class UetGradeServiceEndpoint extends SpringBeanAutowiringSupport impleme
         logger.debug("Request unsubscribe for student: " + studentCode);
         boolean result = gradeService.unsubscribe(studentCode);
         logger.debug("SubscribeGradeService return: " + result);
+
+        // evict this student from grade cache when unsubscribing
+        gradeService.evictStudent(studentCode);
+
         return result;
     }
 

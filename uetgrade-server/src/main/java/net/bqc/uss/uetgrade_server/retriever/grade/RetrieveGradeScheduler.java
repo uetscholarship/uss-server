@@ -7,6 +7,7 @@ import net.bqc.uss.service.MessengerService;
 import net.bqc.uss.uetgrade_server.entity.Course;
 import net.bqc.uss.uetgrade_server.entity.Student;
 import net.bqc.uss.uetgrade_server.repository.CourseRepository;
+import net.bqc.uss.uetgrade_server.service.GradeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,9 @@ public class RetrieveGradeScheduler {
     @Autowired
     private MessengerService messengerServiceProxy;
 
+    @Autowired
+    private GradeService gradeService;
+
     private ConcurrentMap<String, Integer> gradedCoursesCache = new ConcurrentHashMap<>();
 
     @PostConstruct
@@ -53,8 +57,8 @@ public class RetrieveGradeScheduler {
     }
 
     @Async
-//    @Scheduled(cron = "0 */15 6-19 * * MON-FRI", zone = "GMT+7")
-	@Scheduled(cron = "*/5 * * * * *", zone = "GMT+7")
+    @Scheduled(cron = "0 */5 6-19 * * MON-FRI", zone = "GMT+7")
+//	@Scheduled(cron = "0 41 * * * *", zone = "GMT+7")
     public void retrieveNewGrades() {
         try {
             logger.debug("[{}] Retrieving new graded courses...", Thread.currentThread().getName());
@@ -71,26 +75,36 @@ public class RetrieveGradeScheduler {
             List<Course> newGradedCourses = parse(rawGrades, false);
             logger.debug("[{}] New graded courses here: {}", Thread.currentThread().getName(), newGradedCourses);
 
-            /*if (newGradedCourses.size() > 0) {
+            // cache evicting student codes
+            Set<String> evictingStudentCodes = new HashSet<>();
+
+            if (newGradedCourses.size() > 0) {
                 // filter, only keep students who are subscribing to get grades
                 newGradedCourses.stream()
                         .filter(course -> course.getStudents() != null)
                         .forEach(course -> {
                             Set<Student> filteredStudents = course.getStudents().stream()
                                     .filter(student -> {
-                                        student.setCourses(null);
+                                        if (student.isSubscribed()) {
+                                            student.setCourses(null);
+                                            evictingStudentCodes.add(student.getCode());
+                                        }
                                         return student.isSubscribed();
                                     })
                                     .collect(Collectors.toSet());
                             course.setStudents(filteredStudents);
                         });
 
+                logger.debug("[{}] Evicted student codes: {}", Thread.currentThread().getName(), evictingStudentCodes);
+                // evict student whose new grades from grade cache
+                evictingStudentCodes.forEach(gradeService::evictStudent);
+
                 logger.debug("[{}] Notifying for Messenger service...", Thread.currentThread().getName());
                 // notify new graded course for messenger
                 boolean result = messengerServiceProxy.notifyNewGradedCourses(newGradedCourses);
                 logger.debug("[{}] Result: {}", Thread.currentThread().getName(), result);
 
-            }*/
+            }
         }
         catch (Exception e) {
             e.printStackTrace();

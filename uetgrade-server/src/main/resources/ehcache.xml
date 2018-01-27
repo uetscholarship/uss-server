@@ -8,9 +8,9 @@
     </service>
 
     <cache alias="gradeCache">
+        <!-- Eviction by key -->
         <expiry>
-            <!-- TODO: change ttl for gradeCache entry -->
-            <ttl unit="seconds">10</ttl>
+            <none/>
         </expiry>
 
         <listeners>
@@ -26,6 +26,6 @@
             </listener>
         </listeners>
 
-        <heap>100</heap>
+        <heap unit="MB">20</heap>
     </cache>
 </config>
