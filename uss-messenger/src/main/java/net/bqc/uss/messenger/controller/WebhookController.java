@@ -40,19 +40,19 @@ public class WebhookController {
 
 	@Autowired
 	private MyMessengerService myMessengerService;
-	
+
 	@Autowired
 	private MessageSource messageSource;
 
 	@Value("${webhook.token}")
 	private String webhookToken;
-	
+
 	@Autowired
 	private UserDao userDao;
 
 	@Autowired
 	private GradeSubscriberDaoImpl gradeSubscriberDao;
-	
+
 	private JsonMapper jsonMapper = new DefaultJsonMapper();
 
 	@RequestMapping(value="/webhook", method=RequestMethod.GET)
@@ -61,7 +61,7 @@ public class WebhookController {
 
 		return (webhookToken.equals(token)) ? challenge : "not valid";
 	}
-	
+
 	@RequestMapping(value="/webhook", method=RequestMethod.POST)
 	public ResponseEntity<String> receive(@RequestBody final String json) {
 		logger.debug("Request: {}", json);
@@ -100,7 +100,7 @@ public class WebhookController {
 			return new ResponseEntity<>("success", HttpStatus.OK);
 		}
 		catch(Exception e) {
-			e.printStackTrace();
+			logger.error(e.getMessage());
 
 			if (userId != null) {
                 // notify error to users and ask him/her to retry
@@ -300,14 +300,14 @@ public class WebhookController {
 	private void processSubscribeNewsMessage(String userId) {
 		// fetch user info
 		com.restfb.types.User fbUser = myMessengerService.getUserInformation(userId);
-		
+
 		// insert to database
 		User user = new User();
 		user.setFbId(userId);
 		user.setFirstName(fbUser.getFirstName());
 		user.setLastName(fbUser.getLastName());
 		boolean newUser = userDao.insert(user);
-		
+
 		if (!newUser) userDao.updateSubStatus(userId, true);
 		String representativeName = user.getFirstName() == null ? "Stranger" : user.getFirstName();
 
@@ -320,7 +320,7 @@ public class WebhookController {
 		myMessengerService.sendTextMessage(userId,
 				getMessage("text.compliment", new Object[] { representativeName }));
 	}
-	
+
 	private void processUnknownMessage(String userId) {
 		myMessengerService.sendTextMessage(userId, getMessage("text.nothing", null));
 	}
