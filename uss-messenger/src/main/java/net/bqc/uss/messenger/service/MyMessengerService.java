@@ -27,6 +27,8 @@ public class MyMessengerService {
 
     private static final Logger logger = LoggerFactory.getLogger(MyMessengerService.class);
 
+    public static final int MAX_PAYLOAD_ELEMENTS = 10;
+
 	public static final String MN_NEWS_SUBSCRIPTION_PAYLOAD = "MN_NEWS_SUBSCRIPTION_PAYLOAD";
 	public static final String QR_SUBSCRIBE_NEWS_PAYLOAD = "QR_SUBSCRIBE_NEWS_PAYLOAD";
 	public static final String QR_UNSUBSCRIBE_NEWS_PAYLOAD = "QR_UNSUBSCRIBE_NEWS_PAYLOAD";

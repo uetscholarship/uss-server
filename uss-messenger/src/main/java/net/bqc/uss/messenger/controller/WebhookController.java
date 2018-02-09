@@ -232,8 +232,8 @@ public class WebhookController {
             myMessengerService.sendMessage(userId, infoMessage);
         }
         else {
-            // check if pair (userId, studentCode) existed in grade_subscribers
             List<String> studentCodes = gradeSubscriberDao.findStudentCodesBySubscriber(userId);
+			// check if pair (userId, studentCode) existed in grade_subscribers
             if (studentCodes.contains(studentCode)) {
                 infoMessage = myMessengerService.buildGenericMessage(
                         getMessage("text.title.fail", null),
@@ -243,6 +243,14 @@ public class WebhookController {
                 // hint them to click on menu to get grade for subscribed student codes
                 myMessengerService.sendTextMessage(userId,
                         getMessage("grade.text.has_already_sub.support", null));
+            }
+            // check maximum number of student codes allowed to subscribe
+            else if (studentCodes.size() >= MyMessengerService.MAX_PAYLOAD_ELEMENTS) {
+                infoMessage = myMessengerService.buildGenericMessage(
+                        getMessage("text.title.fail", null),
+                        getMessage("grade.text.exceed_allowed_student_codes", new Object[] { MyMessengerService.MAX_PAYLOAD_ELEMENTS }),
+                        null, null);
+                myMessengerService.sendMessage(userId, infoMessage);
             }
             else {
                 // request subscribe to uetgrade-server for that student code
