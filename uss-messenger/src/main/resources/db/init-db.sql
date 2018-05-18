@@ -1,1 +1,0 @@
-INSERT INTO users (fb_id, is_subscribed) VALUES ('1475525605870494', true);

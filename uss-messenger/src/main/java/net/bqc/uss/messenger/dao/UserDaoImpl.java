@@ -33,7 +33,7 @@ public class UserDaoImpl implements UserDao {
 			return null;
 		}
 	}
-	
+
 	@Override
 	public List<User> findAll() {
 		String sql = "SELECT * FROM users";
