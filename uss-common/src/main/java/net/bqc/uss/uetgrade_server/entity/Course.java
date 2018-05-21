@@ -14,10 +14,10 @@ public class Course implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
 
-    @Column(name = "course_code", unique = true)
+    @Column(name = "code", unique = true)
     private String code;
 
-    @Column(name = "course_name")
+    @Column(name = "name")
     private String name;
 
     @Column(name = "grade_url")

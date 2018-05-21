@@ -17,11 +17,17 @@ public class Student implements Serializable {
     @Column(name = "student_id")
     private Integer id;
 
-    @Column(name = "student_code", unique = true)
+    @Column(name = "code", unique = true)
     private String code;
 
-    @Column(name = "student_name")
+    @Column(name = "name")
     private String name;
+
+    @Column(name = "class")
+    private String clazz;
+
+    @Column(name = "dob")
+    private String dob;
 
     @Column(name = "is_subscribed")
     @Type(type = "org.hibernate.type.NumericBooleanType")
@@ -80,6 +86,22 @@ public class Student implements Serializable {
 
     public boolean isSubscribed() {
         return isSubscribed;
+    }
+
+    public String getClazz() {
+        return clazz;
+    }
+
+    public void setClazz(String clazz) {
+        this.clazz = clazz;
+    }
+
+    public String getDob() {
+        return dob;
+    }
+
+    public void setDob(String dob) {
+        this.dob = dob;
     }
 
     @Override
