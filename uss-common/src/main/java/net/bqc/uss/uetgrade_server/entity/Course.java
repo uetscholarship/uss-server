@@ -14,7 +14,7 @@ public class Course implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
 
-    @Column(name = "code", unique = true)
+    @Column(name = "code", unique = true, nullable = false)
     private String code;
 
     @Column(name = "name")
