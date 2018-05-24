@@ -8,6 +8,7 @@ import net.bqc.uss.uetgrade_server.entity.Course;
 import net.bqc.uss.uetgrade_server.entity.Student;
 import net.bqc.uss.uetgrade_server.repository.CourseRepository;
 import net.bqc.uss.uetgrade_server.service.GradeService;
+import net.bqc.uss.uetgrade_server.util.CourseHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,8 +58,8 @@ public class RetrieveGradeScheduler {
     }
 
     @Async
-    @Scheduled(cron = "0 */5 6-19 * * MON-FRI", zone = "GMT+7")
-//	@Scheduled(cron = "0 41 * * * *", zone = "GMT+7")
+//    @Scheduled(cron = "0 */5 6-19 * * MON-FRI", zone = "GMT+7")
+	@Scheduled(cron = "0 */1 * * * *", zone = "GMT+7")
     public void retrieveNewGrades() {
         try {
             logger.debug("[{}] Retrieving new graded courses...", Thread.currentThread().getName());
@@ -124,6 +125,7 @@ public class RetrieveGradeScheduler {
             ArrayNode coursesArray = (ArrayNode) coursesNode;
             for (JsonNode courseNode : coursesArray) {
                 String courseCode = courseNode.get(1).asText();
+                courseCode = CourseHelper.normalizeCourseCode(courseCode);
                 String courseName = courseNode.get(0).asText();
                 String gradeUrl = courseNode.get(2).asText();
                 gradeUrl = (gradeUrl != null && gradeUrl.trim().isEmpty())

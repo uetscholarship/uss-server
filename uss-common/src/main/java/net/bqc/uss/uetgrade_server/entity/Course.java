@@ -26,8 +26,8 @@ public class Course implements Serializable {
     @ManyToMany(mappedBy = "courses", fetch = FetchType.EAGER)
     private Set<Student> students;
 
-    @Column(name = "num_credits")
-    private Integer numCredits;
+    @Column(name = "num_credit")
+    private Integer numCredit;
 
     public Course() {
     }
@@ -83,12 +83,12 @@ public class Course implements Serializable {
         this.students = students;
     }
 
-    public Integer getNumCredits() {
-        return numCredits;
+    public Integer getNumCredit() {
+        return numCredit;
     }
 
-    public void setNumCredits(Integer numCredits) {
-        this.numCredits = numCredits;
+    public void setNumCredit(Integer numCredit) {
+        this.numCredit = numCredit;
     }
 
     @Override
