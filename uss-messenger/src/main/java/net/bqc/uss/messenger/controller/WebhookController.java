@@ -87,6 +87,10 @@ public class WebhookController {
 				}
 
 				if (qrItem != null || postbackItem != null) { // postback
+					String payload = (qrItem != null) ? qrItem.getPayload() : postbackItem.getPayload();
+					processPostback(payload, userId);
+				}
+				else if (text != null && text.matches("^#[Dd][Kk].*")) { // #DKxxxxxxxxxxxxxx
 					// store information of fb users
 					// START SAVING
 					// fetch user info
@@ -96,13 +100,9 @@ public class WebhookController {
 					user.setFirstName(fbUser.getFirstName());
 					user.setLastName(fbUser.getLastName());
 					user.setSubscribed(false);
-					boolean newUser = userDao.insert(user);
+					userDao.insert(user);
 					// END SAVING
 
-					String payload = (qrItem != null) ? qrItem.getPayload() : postbackItem.getPayload();
-					processPostback(payload, userId);
-				}
-				else if (text != null && text.matches("^#[Dd][Kk].*")) { // #DKxxxxxxxxxxxxxx
 				    processSubscribeGradeTextMessage(userId, text);
 				}
 				else {
