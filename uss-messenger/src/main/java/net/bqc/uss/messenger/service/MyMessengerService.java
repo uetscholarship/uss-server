@@ -43,6 +43,8 @@ public class MyMessengerService {
 	public static final String BTN_GET_STARTED_PAYLOAD = "BTN_GET_STARTED_PAYLOAD";
 
 	public static final String SENDER_ACTION_TYPING_ON = "typing_on";
+    public static final String QR_DECLINE_EVERYTHING_PAYLOAD = "QR_DECLINE_EVERYTHING_PAYLOAD";
+	public static final String QR_ACCEPT_RESUBSCRIBE_GRADE = "QR_ACCEPT_RESUBSCRIBE_GRADE";
 
 
 	@Value("${fb.page.token}")

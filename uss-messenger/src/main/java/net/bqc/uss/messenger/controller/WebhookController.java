@@ -87,11 +87,23 @@ public class WebhookController {
 				}
 
 				if (qrItem != null || postbackItem != null) { // postback
+					// store information of fb users
+					// START SAVING
+					// fetch user info
+					com.restfb.types.User fbUser = myMessengerService.getUserInformation(userId);
+					User user = new User();
+					user.setFbId(userId);
+					user.setFirstName(fbUser.getFirstName());
+					user.setLastName(fbUser.getLastName());
+					user.setSubscribed(false);
+					boolean newUser = userDao.insert(user);
+					// END SAVING
+
 					String payload = (qrItem != null) ? qrItem.getPayload() : postbackItem.getPayload();
 					processPostback(payload, userId);
 				}
 				else if (text != null && text.matches("^#[Dd][Kk].*")) { // #DKxxxxxxxxxxxxxx
-				    processSubscribeGradeMessage(userId, text);
+				    processSubscribeGradeTextMessage(userId, text);
 				}
 				else {
                     processUnknownMessage(userId);
@@ -128,6 +140,10 @@ public class WebhookController {
 		else if (payload != null && payload.startsWith(MyMessengerService.BTN_UNSUBSCRIBE_GRADE_PAYLOAD)) {
 			processUnsubscribeGradeMessage(userId, payload);
 		}
+		// QR_ACCEPT_RESUBSCRIBE_GRADE_14027777
+		else if (payload != null && payload.startsWith(MyMessengerService.QR_ACCEPT_RESUBSCRIBE_GRADE)) {
+			processSubscribeGradePostback(userId, payload);
+		}
 		else if (MyMessengerService.MN_GET_GRADES_PAYLOAD.equals(payload)) {
 			processReqGetAllGradesMessage(userId);
 		}
@@ -143,6 +159,32 @@ public class WebhookController {
 		else if (MyMessengerService.BTN_GET_STARTED_PAYLOAD.equals(payload)) {
 			processGetStartedMessage(userId);
 		}
+		else if (MyMessengerService.QR_DECLINE_EVERYTHING_PAYLOAD.equals(payload)) {
+			processDeclineMessage(userId);
+		}
+	}
+
+	private void processSubscribeGradePostback(String userId, String payload) {
+		Message infoMessage;
+		String[] payloadPieces = payload.split("_");
+		String studentCode = payloadPieces[payloadPieces.length - 1];
+		// need validate for student code, maybe in case white characters is not expected (not space) :(
+		if (!studentCode.matches("\\d{8}")) {
+			infoMessage = myMessengerService.buildGenericMessage(
+					getMessage("text.title.fail", null),
+					getMessage("grade.text.sub.fail", null),
+					null, null);
+			myMessengerService.sendMessage(userId, infoMessage);
+		}
+		else {
+			processSubscribeGradeRequest(userId, studentCode);
+		}
+	}
+
+	private void processDeclineMessage(String userId) {
+		myMessengerService.sendTextMessage(
+				userId,
+				getMessage("text.thank_for_declining", null));
 	}
 
 	private void processGetStartedMessage(String userId) {
@@ -217,7 +259,7 @@ public class WebhookController {
         myMessengerService.sendMessage(userId, askMessage);
 	}
 
-	private void processSubscribeGradeMessage(String userId, String textMessage) {
+	private void processSubscribeGradeTextMessage(String userId, String textMessage) {
         Message infoMessage;
 
         // get student code from textMessage
@@ -232,56 +274,62 @@ public class WebhookController {
             myMessengerService.sendMessage(userId, infoMessage);
         }
         else {
-            List<String> studentCodes = gradeSubscriberDao.findStudentCodesBySubscriber(userId);
-			// check if pair (userId, studentCode) existed in grade_subscribers
-            if (studentCodes.contains(studentCode)) {
-                infoMessage = myMessengerService.buildGenericMessage(
-                        getMessage("text.title.fail", null),
-                        getMessage("grade.text.has_already_sub", new Object[] { studentCode }),
-                        null, null);
-                myMessengerService.sendMessage(userId, infoMessage);
-                // hint them to click on menu to get grade for subscribed student codes
-                myMessengerService.sendTextMessage(userId,
-                        getMessage("grade.text.has_already_sub.support", null));
-            }
-            // check maximum number of student codes allowed to subscribe
-            else if (studentCodes.size() >= MyMessengerService.MAX_PAYLOAD_ELEMENTS) {
-                infoMessage = myMessengerService.buildGenericMessage(
-                        getMessage("text.title.fail", null),
-                        getMessage("grade.text.exceed_allowed_student_codes", new Object[] { MyMessengerService.MAX_PAYLOAD_ELEMENTS }),
-                        null, null);
-                myMessengerService.sendMessage(userId, infoMessage);
-            }
-            else {
-                // request subscribe to uetgrade-server for that student code
-                // if uetgrade-server return true, notify success, and insert into grade_subscribers
-                // 		else notify fail
-				logger.debug("Request uetgrade-server to subscribe for " + studentCode);
-				boolean result = uetGradeService.subscribeGrade(studentCode);
-				logger.debug("Result: " + result);
-                if (result) { // success
-                    gradeSubscriberDao.insertSubscriber(userId, studentCode);
-
-                    // notify success
-                    infoMessage = myMessengerService.buildGenericMessage(
-                            getMessage("text.title.success", null),
-                            getMessage("grade.text.sub.success", new Object[] { studentCode }),
-                            null, null);
-                    myMessengerService.sendMessage(userId, infoMessage);
-
-                    // send all grades on the first time
-                    myMessengerService.sendAllGrades(userId, studentCode);
-                }
-                else { // fail
-                    infoMessage = myMessengerService.buildGenericMessage(
-                            getMessage("text.title.fail", null),
-                            getMessage("grade.text.sub.fail", null),
-                            null, null);
-                    myMessengerService.sendMessage(userId, infoMessage);
-                }
-            }
+            processSubscribeGradeRequest(userId, studentCode);
         }
     }
+
+    private void processSubscribeGradeRequest(String userId, String studentCode) {
+		Message infoMessage;
+
+		List<String> studentCodes = gradeSubscriberDao.findStudentCodesBySubscriber(userId);
+		// check if pair (userId, studentCode) existed in grade_subscribers
+		if (studentCodes.contains(studentCode)) {
+			infoMessage = myMessengerService.buildGenericMessage(
+					getMessage("text.title.fail", null),
+					getMessage("grade.text.has_already_sub", new Object[] { studentCode }),
+					null, null);
+			myMessengerService.sendMessage(userId, infoMessage);
+			// hint them to click on menu to get grade for subscribed student codes
+			myMessengerService.sendTextMessage(userId,
+					getMessage("grade.text.has_already_sub.support", null));
+		}
+		// check maximum number of student codes allowed to subscribe
+		else if (studentCodes.size() >= MyMessengerService.MAX_PAYLOAD_ELEMENTS) {
+			infoMessage = myMessengerService.buildGenericMessage(
+					getMessage("text.title.fail", null),
+					getMessage("grade.text.exceed_allowed_student_codes", new Object[] { MyMessengerService.MAX_PAYLOAD_ELEMENTS }),
+					null, null);
+			myMessengerService.sendMessage(userId, infoMessage);
+		}
+		else {
+			// request subscribe to uetgrade-server for that student code
+			// if uetgrade-server return true, notify success, and insert into grade_subscribers
+			// 		else notify fail
+			logger.debug("Request uetgrade-server to subscribe for " + studentCode);
+			boolean result = uetGradeService.subscribeGrade(studentCode);
+			logger.debug("Result: " + result);
+			if (result) { // success
+				gradeSubscriberDao.insertSubscriber(userId, studentCode);
+
+				// notify success
+				infoMessage = myMessengerService.buildGenericMessage(
+						getMessage("text.title.success", null),
+						getMessage("grade.text.sub.success", new Object[] { studentCode }),
+						null, null);
+				myMessengerService.sendMessage(userId, infoMessage);
+
+				// send all grades on the first time
+				myMessengerService.sendAllGrades(userId, studentCode);
+			}
+			else { // fail
+				infoMessage = myMessengerService.buildGenericMessage(
+						getMessage("text.title.fail", null),
+						getMessage("grade.text.sub.fail", null),
+						null, null);
+				myMessengerService.sendMessage(userId, infoMessage);
+			}
+		}
+	}
 
 	private void processMenuNewsSubscriptionMessage(String userId) {
 		User user = userDao.findByFbId(userId);
