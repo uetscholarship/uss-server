@@ -67,7 +67,7 @@ public class WebhookController {
 		logger.debug("Request: {}", json);
 		String userId = null;
 		return new ResponseEntity<>("success", HttpStatus.OK);
-		/*try {
+		try {
 			WebhookObject data = jsonMapper.toJavaObject(json, WebhookObject.class);
 			List<MessagingItem> messagingItems = data.getEntryList().get(0).getMessaging();
 			for (MessagingItem messagingItem : messagingItems) {
@@ -116,7 +116,7 @@ public class WebhookController {
 			logger.error(e.getMessage());
 
 			return new ResponseEntity<>("success", HttpStatus.OK);
-		}*/
+		}
 	}
 
 	private void processPostback(String payload, String userId) {
