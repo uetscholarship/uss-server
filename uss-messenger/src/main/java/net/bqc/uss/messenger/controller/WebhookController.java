@@ -66,7 +66,8 @@ public class WebhookController {
 	public ResponseEntity<String> receive(@RequestBody final String json) {
 		logger.debug("Request: {}", json);
 		String userId = null;
-		try {
+		return new ResponseEntity<>("success", HttpStatus.OK);
+		/*try {
 			WebhookObject data = jsonMapper.toJavaObject(json, WebhookObject.class);
 			List<MessagingItem> messagingItems = data.getEntryList().get(0).getMessaging();
 			for (MessagingItem messagingItem : messagingItems) {
@@ -114,17 +115,8 @@ public class WebhookController {
 		catch(Exception e) {
 			logger.error(e.getMessage());
 
-			/*if (userId != null) {
-                // notify error to users and ask him/her to retry
-                Message errorMessage = myMessengerService.buildGenericMessage(
-                        getMessage("text.title.fail", null),
-                        getMessage("text.subtitle.fail", null),
-                        null, null);
-                myMessengerService.sendMessage(userId, errorMessage);
-            }*/
-
 			return new ResponseEntity<>("success", HttpStatus.OK);
-		}
+		}*/
 	}
 
 	private void processPostback(String payload, String userId) {
