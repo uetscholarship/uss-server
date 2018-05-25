@@ -66,7 +66,7 @@ public class WebhookController {
 	public ResponseEntity<String> receive(@RequestBody final String json) {
 		logger.debug("Request: {}", json);
 		String userId = null;
-		return new ResponseEntity<>("success", HttpStatus.OK);
+
 		try {
 			WebhookObject data = jsonMapper.toJavaObject(json, WebhookObject.class);
 			List<MessagingItem> messagingItems = data.getEntryList().get(0).getMessaging();
