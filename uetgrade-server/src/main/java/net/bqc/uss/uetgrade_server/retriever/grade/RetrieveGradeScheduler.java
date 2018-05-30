@@ -133,7 +133,7 @@ public class RetrieveGradeScheduler {
 
                 if (gradeUrl != null) { // graded courses and not in graded course cache
                     if (!gradedCoursesCache.containsKey(courseCode)) {
-                        Course existedCourse = courseRepository.findByCode(courseCode);
+                        Course existedCourse = courseRepository.findWithStudentsByCode(courseCode);
                         if (existedCourse != null) {
                             if (existedCourse.getGradeUrl() == null) { // exist db but not graded before
                                 courseRepository.updateGradeUrlByCode(courseCode, gradeUrl);

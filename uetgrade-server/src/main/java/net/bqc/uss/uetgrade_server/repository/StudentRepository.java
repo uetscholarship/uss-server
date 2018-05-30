@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 public interface StudentRepository extends CrudRepository<Student, Integer> {
 
     @Query("select s from Student s join fetch s.courses where s.code=:code")
-    Student findStudentWithCoursesByCode(@Param("code") String code);
+    Student findWithCoursesByCode(@Param("code") String code);
     Student findByCode(String code);
     boolean existsByCode(String code);
 }
