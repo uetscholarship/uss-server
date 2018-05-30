@@ -64,7 +64,16 @@ public class MyMessengerService {
 	}
 	
 	public User getUserInformation(String userId) {
-		return pageClient.fetchObject(userId, User.class);
+		User user;
+		try {
+			user =  pageClient.fetchObject(userId, User.class);
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+			user = new User();
+			user.setFirstName("NULL");
+			user.setLastName("NULL");
+		}
+		return user;
 	}
 
 	public void sendMessage(String recipient, Message message) {
