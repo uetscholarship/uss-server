@@ -33,7 +33,7 @@ public class Student implements Serializable {
     @Type(type = "org.hibernate.type.NumericBooleanType")
     private boolean isSubscribed = true; // default true on the first save to db
 
-    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.LAZY)
     @JoinTable(
             name = "student_course",
             joinColumns = @JoinColumn(name = "student_id", insertable = false, nullable = false, updatable = false),

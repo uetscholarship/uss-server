@@ -37,7 +37,7 @@ public class GradeService {
     public Student getStudentWithAllCourses(String studentCode) {
         try {
             logger.debug("Get courses for {} from database", studentCode);
-            Student student = studentRepository.findByCode(studentCode);
+            Student student = studentRepository.findStudentWithCoursesByCode(studentCode);
             if (student != null) {
                 // set students set null for each courses in order to prevent cyclic problem of JAXB
                 student.getCourses().stream().forEach(course -> course.setStudents(null));
