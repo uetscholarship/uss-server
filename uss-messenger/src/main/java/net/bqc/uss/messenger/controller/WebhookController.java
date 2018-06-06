@@ -173,7 +173,7 @@ public class WebhookController {
 		String witKey = entity.getWitAiKey();
 		String value = entity.getValue();
 		double score = entity.getConfidence();
-		logger.debug("[NLP] Received Intent: [{} = {}]", witKey, value);
+		logger.debug("[NLP] Received Intent: [{} = {},{}]", witKey, value, score);
 
 		// get grade intent
 		if (NLPService.INTENT_KEY.equals(witKey)
