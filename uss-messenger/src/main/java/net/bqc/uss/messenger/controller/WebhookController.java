@@ -179,6 +179,10 @@ public class WebhookController {
 				&& NLPService.INTENT_GET_GRADE.equals(value)) {
 			processReqGetAllGradesMessage(userId);
 		}
+		else if (NLPService.INTENT_KEY.equals(witKey)
+				&& NLPService.INTENT_DEFAULT.equals(value)) {
+			processUnknownMessage(userId);
+		}
 	}
 
 	private void processUnknownMessage(String userId) {
