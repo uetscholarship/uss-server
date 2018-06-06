@@ -31,15 +31,19 @@ public class NLPService {
     private GradeSubscriptionService gradeSubscriptionService;
 
     public void processNlp(String userId, NlpResult nlpResult) {
-        List<NlpCustomWitAi> entities = nlpResult.getEntities(NlpCustomWitAi.class);
+        try {
+            List<NlpCustomWitAi> entities = nlpResult.getEntities(NlpCustomWitAi.class);
 
-        if (entities.isEmpty()) { // can not recognize any intents in message
-            processUnknownMessage(userId);
+            if (entities.isEmpty()) { // can not recognize any intents in message
+                processUnknownMessage(userId);
+            }
+            else {
+                this.processNlpEntities(userId, entities);
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            e.printStackTrace();
         }
-        else {
-            this.processNlpEntities(userId, entities);
-        }
-
     }
 
     private void processNlpEntities(String userId, List<NlpCustomWitAi> entities) {
@@ -70,10 +74,10 @@ public class NLPService {
                     myMessengerService.sendTextMessage(userId, "Hi, chào bạn :D");
                     return;
                 }
-                if (INTENT_SUBSCRIBE_GRADE.equals(value) && score >= 0.8) {
+                if (INTENT_SUBSCRIBE_GRADE.equals(value) && score >= 0.7) {
                     intent = INTENT_SUBSCRIBE_GRADE;
                 }
-                if (INTENT_UNSUBSCRIBE_GRADE.equals(value) && score >= 0.8) {
+                if (INTENT_UNSUBSCRIBE_GRADE.equals(value) && score >= 0.7) {
                     intent = INTENT_UNSUBSCRIBE_GRADE;
                 }
             }
