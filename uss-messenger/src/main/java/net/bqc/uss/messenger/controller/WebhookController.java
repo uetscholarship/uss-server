@@ -172,11 +172,13 @@ public class WebhookController {
 	private void processNlpEntities(String userId, NlpCustomWitAi entity) {
 		String witKey = entity.getWitAiKey();
 		String value = entity.getValue();
+		double score = entity.getConfidence();
 		logger.debug("[NLP] Received Intent: [{} = {}]", witKey, value);
 
 		// get grade intent
 		if (NLPService.INTENT_KEY.equals(witKey)
-				&& NLPService.INTENT_GET_GRADE.equals(value)) {
+				&& NLPService.INTENT_GET_GRADE.equals(value)
+				&& score == 1.0) {
 			processReqGetAllGradesMessage(userId);
 		}
 		else if (NLPService.INTENT_KEY.equals(witKey)
