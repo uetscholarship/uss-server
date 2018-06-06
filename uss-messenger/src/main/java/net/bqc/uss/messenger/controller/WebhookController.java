@@ -142,6 +142,9 @@ public class WebhookController {
 		else if (payload != null && payload.startsWith(MyMessengerService.QR_ACCEPT_RESUBSCRIBE_GRADE)) {
 			processSubscribeGradePostback(userId, payload);
 		}
+        else if (payload != null && payload.startsWith(MyMessengerService.BTN_SUBSCRIBE_GRADE_PAYLOAD)) {
+            processSubscribeGradePostback(userId, payload);
+        }
 		else if (MyMessengerService.MN_GET_GRADES_PAYLOAD.equals(payload)) {
             gradeSubscriptionService.processReqGetAllGradesMessage(userId);
 		}
@@ -157,6 +160,9 @@ public class WebhookController {
 		else if (MyMessengerService.BTN_GET_STARTED_PAYLOAD.equals(payload)) {
 			processGetStartedMessage(userId);
 		}
+		else if (MyMessengerService.BTN_DECLINE_PAYLOAD.equals(payload)) {
+		    processDeclineMessage(userId);
+        }
 		else if (MyMessengerService.QR_DECLINE_EVERYTHING_PAYLOAD.equals(payload)) {
 			processDeclineMessage(userId);
 		}
@@ -173,7 +179,7 @@ public class WebhookController {
         String studentCode = payloadPieces[payloadPieces.length - 1];
         // need validate for student code, maybe in case white characters is not expected (not space) :(
         if (!studentCode.matches("\\d{8}")) {
-            infoMessage = myMessengerService.buildGenericMessage(
+            infoMessage = MyMessengerService.buildGenericMessage(
                     getMessage("text.title.fail", null),
                     getMessage("grade.text.sub.fail", null),
                     null, null);

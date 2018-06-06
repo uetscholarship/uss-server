@@ -2,7 +2,6 @@ package net.bqc.uss.messenger.service;
 
 import com.restfb.types.send.*;
 import net.bqc.uss.messenger.dao.GradeSubscriberDaoImpl;
-import net.bqc.uss.messenger.dao.UserDao;
 import net.bqc.uss.service.UetGradeService;
 import net.bqc.uss.uetgrade_server.entity.Course;
 import net.bqc.uss.uetgrade_server.entity.Student;
@@ -16,8 +15,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-import static net.bqc.uss.messenger.service.MyMessengerService.BTN_GET_GRADES_PAYLOAD;
-import static net.bqc.uss.messenger.service.MyMessengerService.BTN_UNSUBSCRIBE_GRADE_PAYLOAD;
+import static net.bqc.uss.messenger.service.MyMessengerService.*;
 
 @Component
 public class GradeSubscriptionService {
@@ -32,9 +30,6 @@ public class GradeSubscriptionService {
 
     @Autowired
     private MessageSource messageSource;
-
-    @Autowired
-    private UserDao userDao;
 
     @Autowired
     private GradeSubscriberDaoImpl gradeSubscriberDao;
@@ -247,5 +242,21 @@ public class GradeSubscriptionService {
 
     private String getMessage(String key, Object[] objects) {
         return messageSource.getMessage(key, objects, Locale.ENGLISH);
+    }
+
+    public void confirmToSubscribe(String userId, String studentCode) {
+        Message confirmMessage = MyMessengerService.buildConfirmMessage(
+                "Xác nhận", String.format("Bạn thật sự muốn đăng ký nhận điểm cho mssv %s?", studentCode),
+                String.format("%_%", BTN_SUBSCRIBE_GRADE_PAYLOAD, studentCode),  BTN_DECLINE_PAYLOAD);
+
+        myMessengerService.sendMessage(userId, confirmMessage);
+    }
+
+    public void confirmToUnsubscribe(String userId, String studentCode) {
+        Message confirmMessage = MyMessengerService.buildConfirmMessage(
+                "Xác nhận", String.format("Bạn thật sự muốn hủy đăng ký cho mssv %s?", studentCode),
+                String.format("%_%", BTN_UNSUBSCRIBE_GRADE_PAYLOAD, studentCode),  BTN_DECLINE_PAYLOAD);
+
+        myMessengerService.sendMessage(userId, confirmMessage);
     }
 }

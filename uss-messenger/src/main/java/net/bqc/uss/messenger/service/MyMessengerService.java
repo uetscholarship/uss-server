@@ -37,10 +37,13 @@ public class MyMessengerService {
 	public static final String MN_GET_GRADES_PAYLOAD = "MN_GET_GRADES_PAYLOAD";
 	public static final String MN_SUBSCRIBE_GRADE_PAYLOAD = "MN_SUBSCRIBE_GRADE_PAYLOAD";
 
+	public static final String BTN_SUBSCRIBE_GRADE_PAYLOAD = "BTN_SUBSCRIBE_GRADE_PAYLOAD";
 	public static final String BTN_UNSUBSCRIBE_GRADE_PAYLOAD = "BTN_UNSUBSCRIBE_GRADE_PAYLOAD";
 	public static final String BTN_GET_GRADES_PAYLOAD = "BTN_GET_GRADES_PAYLOAD";
 
 	public static final String BTN_GET_STARTED_PAYLOAD = "BTN_GET_STARTED_PAYLOAD";
+
+	public static final String BTN_DECLINE_PAYLOAD = "BTN_DECLINE_PAYLOAD";
 
 	public static final String SENDER_ACTION_TYPING_ON = "typing_on";
     public static final String QR_DECLINE_EVERYTHING_PAYLOAD = "QR_DECLINE_EVERYTHING_PAYLOAD";
@@ -55,9 +58,6 @@ public class MyMessengerService {
 	
 	private FacebookClient pageClient;
 
-    @Autowired
-    private UetGradeService uetGradeService;
-	
 	@PostConstruct
 	public void init() {
 		pageClient = new DefaultFacebookClient(PAGE_TOKEN, Version.VERSION_2_9);
@@ -93,6 +93,22 @@ public class MyMessengerService {
 	public void sendTextMessage(String recipient, String message) {
 		Message txtMessage = buildTextMessage(message);
 		sendMessage(recipient, txtMessage);
+	}
+
+	public static Message buildConfirmMessage(String title, String subtitle, String yesPayload, String noPayload) {
+		GenericTemplatePayload payload = new GenericTemplatePayload();
+		TemplateAttachment attachment = new TemplateAttachment(payload);
+
+		Bubble bubble = new Bubble(title);
+		bubble.setSubtitle(subtitle);
+		PostbackButton yesButton = new PostbackButton("Có", yesPayload);
+		PostbackButton noButton = new PostbackButton("Không", noPayload);
+		bubble.addButton(yesButton);
+		bubble.addButton(noButton);
+		payload.addBubble(bubble);
+
+		Message message = new Message(attachment);
+		return message;
 	}
 	
 	public static Message buildGenericMessage(String title, String subtitle,
