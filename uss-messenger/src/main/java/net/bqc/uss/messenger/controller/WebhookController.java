@@ -176,13 +176,18 @@ public class WebhookController {
 		logger.debug("[NLP] Received Intent: [{} = {},{}]", witKey, value, score);
 
 		// get grade intent
-		if (NLPService.INTENT_KEY.equals(witKey)
-				&& NLPService.INTENT_GET_GRADE.equals(value)
-				&& score == 1.0) {
-			processReqGetAllGradesMessage(userId);
+		if (NLPService.INTENT_KEY.equals(witKey)) {
+			if (NLPService.INTENT_GET_GRADE.equals(value) && score >= 0.8) {
+				processReqGetAllGradesMessage(userId);
+			}
+			else if (NLPService.INTENT_THANKFUL.equals(value) && score >= 0.7) {
+				myMessengerService.sendTextMessage(userId, "Hihi, mong bạn đạt điểm cao ^^");
+			}
+			else if (NLPService.INTENT_DEFAULT.equals(value)) {
+				processUnknownMessage(userId);
+			}
 		}
-		else if (NLPService.INTENT_KEY.equals(witKey)
-				&& NLPService.INTENT_DEFAULT.equals(value)) {
+		else {
 			processUnknownMessage(userId);
 		}
 	}
