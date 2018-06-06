@@ -2,7 +2,6 @@ package net.bqc.uss.messenger.service;
 
 import com.restfb.types.webhook.messaging.NlpResult;
 import com.restfb.types.webhook.messaging.nlp.NlpCustomWitAi;
-import net.bqc.uss.messenger.controller.WebhookController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +12,7 @@ import java.util.List;
 @Component
 public class NLPService {
 
-    private static final Logger logger = LoggerFactory.getLogger(WebhookController.class);
+    private static final Logger logger = LoggerFactory.getLogger(NLPService.class);
 
     public static final String ENTITY_INTENT = "intent";
     public static final String ENTITY_STUDENT_CODE = "student_code";
