@@ -4,12 +4,13 @@ import java.util.List;
 import java.util.Locale;
 
 import com.restfb.types.send.Message;
-import com.restfb.types.webhook.messaging.MessageItem;
-import com.restfb.types.webhook.messaging.PostbackItem;
+import com.restfb.types.webhook.messaging.*;
+import com.restfb.types.webhook.messaging.nlp.NlpCustomWitAi;
 import net.bqc.uss.messenger.dao.GradeSubscriberDaoImpl;
 import net.bqc.uss.messenger.dao.UserDao;
 import net.bqc.uss.messenger.model.User;
 import net.bqc.uss.messenger.service.MyMessengerService;
+import net.bqc.uss.messenger.service.NLPService;
 import net.bqc.uss.service.UetGradeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,8 +28,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.restfb.DefaultJsonMapper;
 import com.restfb.JsonMapper;
 import com.restfb.types.webhook.WebhookObject;
-import com.restfb.types.webhook.messaging.MessagingItem;
-import com.restfb.types.webhook.messaging.QuickReplyItem;
 
 @RestController
 public class WebhookController {
@@ -107,7 +106,8 @@ public class WebhookController {
 				    processSubscribeGradeTextMessage(userId, text);
 				}
 				else {
-                    processUnknownMessage(userId);
+					this.processNlp(userId, messageItem.getNlp());
+//                    processUnknownMessage(userId);
                 }
 			}
 			return new ResponseEntity<>("success", HttpStatus.OK);
@@ -154,6 +154,35 @@ public class WebhookController {
 		else if (MyMessengerService.QR_DECLINE_EVERYTHING_PAYLOAD.equals(payload)) {
 			processDeclineMessage(userId);
 		}
+	}
+
+	public void processNlp(String userId, NlpResult nlpResult) {
+		List<NlpCustomWitAi> entities = nlpResult.getEntities(NlpCustomWitAi.class);
+
+		// can not recognize any intents in message
+		if (entities.isEmpty()) {
+			processUnknownMessage(userId);
+		}
+		else {
+			entities.forEach(e -> this.processNlpEntities(userId, e));
+		}
+
+	}
+
+	private void processNlpEntities(String userId, NlpCustomWitAi entity) {
+		String witKey = entity.getWitAiKey();
+		String value = entity.getValue();
+		logger.debug("[NLP] Received Intent: [{} = {}]", witKey, value);
+
+		// get grade intent
+		if (NLPService.INTENT_KEY.equals(witKey)
+				&& NLPService.INTENT_GET_GRADE.equals(value)) {
+			processReqGetAllGradesMessage(userId);
+		}
+	}
+
+	private void processUnknownMessage(String userId) {
+		myMessengerService.sendTextMessage(userId, getMessage("text.nothing", null));
 	}
 
 	private void processSubscribeGradePostback(String userId, String payload) {
@@ -367,10 +396,6 @@ public class WebhookController {
         myMessengerService.sendMessage(userId, successMessage);
 		myMessengerService.sendTextMessage(userId,
 				getMessage("text.compliment", new Object[] { representativeName }));
-	}
-
-	private void processUnknownMessage(String userId) {
-		myMessengerService.sendTextMessage(userId, getMessage("text.nothing", null));
 	}
 
 	private String getMessage(String key, Object[] objects) {
