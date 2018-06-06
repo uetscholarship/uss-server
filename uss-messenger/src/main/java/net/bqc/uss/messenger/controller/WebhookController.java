@@ -179,13 +179,15 @@ public class WebhookController {
 		if (NLPService.INTENT_KEY.equals(witKey)) {
 			if (NLPService.INTENT_GET_GRADE.equals(value) && score >= 0.8) {
 				processReqGetAllGradesMessage(userId);
+				return;
 			}
-			else if (NLPService.INTENT_THANKFUL.equals(value) && score >= 0.7) {
+			if (NLPService.INTENT_THANKFUL.equals(value) && score >= 0.7) {
 				myMessengerService.sendTextMessage(userId, "Hihi, mong bạn đạt điểm cao ^^");
+				return;
 			}
-			else if (NLPService.INTENT_DEFAULT.equals(value)) {
-				processUnknownMessage(userId);
-			}
+
+			processUnknownMessage(userId);
+
 		}
 		else {
 			processUnknownMessage(userId);
