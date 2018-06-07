@@ -23,6 +23,8 @@ public class NLPService {
     public static final String INTENT_THANKFUL = "thankful";
     public static final String INTENT_SUBSCRIBE_GRADE = "subscribe";
     public static final String INTENT_UNSUBSCRIBE_GRADE = "unsubscribe";
+    public static final String INTENT_GET_GRADE_SUBSCRIPTIOTN_LIST = "get_subscription_list";
+    public static final String INTENT_ASK_FOR_NEW_GRADE = "ask_for_new_grade";
 
     @Autowired
     private MyMessengerService myMessengerService;
@@ -62,8 +64,12 @@ public class NLPService {
                     studentCode = value;
             }
             else if (ENTITY_INTENT.equals(witKey)) {
-                if (INTENT_GET_GRADE.equals(value) && score >= 0.8) {
-                    gradeSubscriptionService.processReqGetAllGradesMessage(userId);
+                if (INTENT_GET_GRADE_SUBSCRIPTIOTN_LIST.equals(value) && score >= 0.8) {
+                    gradeSubscriptionService.getGradeSubscriptionStatus(userId);
+                    return;
+                }
+                if (INTENT_ASK_FOR_NEW_GRADE.equals(value) && score >= 0.7) {
+                    myMessengerService.sendTextMessage(userId, "Yên tâm, bao giờ có điểm bot sẽ báo ngay nhé ;)");
                     return;
                 }
                 if (INTENT_THANKFUL.equals(value) && score >= 0.7) {
@@ -74,6 +80,11 @@ public class NLPService {
                     myMessengerService.sendTextMessage(userId, "Hi, chào bạn :D");
                     return;
                 }
+
+                if (INTENT_GET_GRADE.equals(value) && score >= 0.8) {
+                    intent = INTENT_GET_GRADE;
+                }
+
                 if (INTENT_SUBSCRIBE_GRADE.equals(value) && score >= 0.7) {
                     intent = INTENT_SUBSCRIBE_GRADE;
                 }
@@ -83,6 +94,11 @@ public class NLPService {
             }
         }
 
+        if (studentCode == null && INTENT_GET_GRADE.equals(intent)) {
+            gradeSubscriptionService.processReqGetAllGradesMessage(userId);
+            return;
+        }
+
         if (studentCode != null) {
             if (intent == null || INTENT_SUBSCRIBE_GRADE.equals(intent)) {
                 gradeSubscriptionService.confirmToSubscribe(userId, studentCode);
@@ -90,6 +106,10 @@ public class NLPService {
             }
             if (INTENT_UNSUBSCRIBE_GRADE.equals(intent)) {
                 gradeSubscriptionService.confirmToUnsubscribe(userId, studentCode);
+                return;
+            }
+            if (INTENT_GET_GRADE.equals(intent)) {
+                gradeSubscriptionService.processReqGetGradeForStudent(userId, studentCode);
                 return;
             }
         }

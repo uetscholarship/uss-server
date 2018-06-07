@@ -37,20 +37,22 @@ public class GradeSubscriptionService {
     public void processReqGetAllGradesMessage(String userId) {
         List<String> studentCodes = gradeSubscriberDao.findStudentCodesBySubscriber(userId);
         if (studentCodes.size() == 1) { // display grades for single-subscriber
-            if (!gradeSubscriberDao.isSubscribed(userId, studentCodes.get(0))) {
-                Message errorMessage = MyMessengerService.buildGenericMessage(
-                        getMessage("text.title.warning", null),
-                        getMessage("text.err", null),
-                        null, null);
-                myMessengerService.sendMessage(userId, errorMessage);
-            }
-            else {
-                sendAllGrades(userId, studentCodes.get(0));
-            }
-
+            processReqGetGradeForStudent(userId, studentCodes.get(0));
         }
         else { // do same as processing grade subscription message
             sendGradeSubscriptionStatus(userId, studentCodes);
+        }
+    }
+
+    public void processReqGetGradeForStudent(String userId, String studentCode) {
+        if (!gradeSubscriberDao.isSubscribed(userId, studentCode)) {
+            Message errorMessage = MyMessengerService.buildGenericMessage(
+                    "Cảnh báo", String.format("Bạn chưa đăng ký nhận điểm cho mssv %s!", studentCode),
+                    null, null);
+            myMessengerService.sendMessage(userId, errorMessage);
+        }
+        else {
+            sendAllGrades(userId, studentCode);
         }
     }
 
@@ -200,8 +202,12 @@ public class GradeSubscriptionService {
         return message;
     }
 
+    public void getGradeSubscriptionStatus(String userId) {
+        List<String> studentCodes = gradeSubscriberDao.findStudentCodesBySubscriber(userId);
+        sendGradeSubscriptionStatus(userId, studentCodes);
+    }
 
-    public void sendGradeSubscriptionStatus(String recipient, List<String> subscribedStudentCodes) {
+    private void sendGradeSubscriptionStatus(String recipient, List<String> subscribedStudentCodes) {
         if (subscribedStudentCodes.size() == 0) {
             myMessengerService.sendTextMessage(recipient, getMessage("grade.text.status.empty", null));
             Message askMessage = buildAskForStudentCodeSubGradesMessage();

@@ -63,7 +63,13 @@ public class NewsSubscriptionService {
                 getMessage("text.compliment", new Object[] { representativeName }));
     }
 
-    public void sendNewsSubscriptionStatus(String recipient, boolean isSubscribed) {
+    public void getNewsSubscriptionStatus(String userId) {
+        User user = userDao.findByFbId(userId);
+        boolean isSubscribed = (user != null) && user.isSubscribed();
+        sendNewsSubscriptionStatus(userId, isSubscribed);
+    }
+
+    private void sendNewsSubscriptionStatus(String recipient, boolean isSubscribed) {
         Message message;
         QuickReply quickreply;
 

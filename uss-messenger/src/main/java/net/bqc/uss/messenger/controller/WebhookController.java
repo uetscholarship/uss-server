@@ -113,7 +113,8 @@ public class WebhookController {
                     /**
                      * PROCESS NLP
                      */
-					nlpService.processNlp(userId, messageItem.getNlp());
+                    if (messageItem.getNlp() != null)
+						nlpService.processNlp(userId, messageItem.getNlp());
                 }
 			}
 			return new ResponseEntity<>("success", HttpStatus.OK);
@@ -152,10 +153,10 @@ public class WebhookController {
             processReqGetGradesMessage(userId, payload);
         }
 		else if (MyMessengerService.MN_GRADE_SUBSCRIPTION_PAYLOAD.equals(payload)) {
-			processMenuGradeSubscriptionMessage(userId);
+			gradeSubscriptionService.getGradeSubscriptionStatus(userId);
 		}
 		else if (MyMessengerService.MN_NEWS_SUBSCRIPTION_PAYLOAD.equals(payload)) {
-			processMenuNewsSubscriptionMessage(userId);
+			newsSubscriptionService.getNewsSubscriptionStatus(userId);
 		}
 		else if (MyMessengerService.BTN_GET_STARTED_PAYLOAD.equals(payload)) {
 			processGetStartedMessage(userId);
@@ -223,23 +224,6 @@ public class WebhookController {
             gradeSubscriptionService.processSubscribeGradeRequest(userId, studentCode);
         }
     }
-
-    /****************************************************************
-     * ============================================================ *
-     *  NEWS SUBSCRIPTION MANAGEMENT                                *
-     * ============================================================ *
-     ****************************************************************/
-
-	private void processMenuNewsSubscriptionMessage(String userId) {
-		User user = userDao.findByFbId(userId);
-		boolean isSubscribed = (user != null) && user.isSubscribed();
-		newsSubscriptionService.sendNewsSubscriptionStatus(userId, isSubscribed);
-	}
-
-	private void processMenuGradeSubscriptionMessage(String userId) {
-		List<String> studentCodes = gradeSubscriberDao.findStudentCodesBySubscriber(userId);
-        gradeSubscriptionService.sendGradeSubscriptionStatus(userId, studentCodes);
-	}
 
     /****************************************************************
      * ============================================================ *
