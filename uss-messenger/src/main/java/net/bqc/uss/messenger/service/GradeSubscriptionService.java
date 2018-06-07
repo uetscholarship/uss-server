@@ -252,7 +252,7 @@ public class GradeSubscriptionService {
 
     public void confirmToSubscribe(String userId, String studentCode) {
         Message confirmMessage = MyMessengerService.buildConfirmMessage(
-                "Xác nhận", String.format("Bạn thật sự muốn đăng ký nhận điểm cho mssv %s?", studentCode),
+                "Xác nhận", String.format("Bạn muốn đăng ký nhận điểm cho mssv %s?", studentCode),
                 String.format("%s_%s", BTN_SUBSCRIBE_GRADE_PAYLOAD, studentCode),  BTN_DECLINE_PAYLOAD);
 
         myMessengerService.sendMessage(userId, confirmMessage);
