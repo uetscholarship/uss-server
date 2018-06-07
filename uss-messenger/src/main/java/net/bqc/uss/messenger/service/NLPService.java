@@ -81,7 +81,7 @@ public class NLPService {
                     return;
                 }
 
-                if (INTENT_GET_GRADE.equals(value) && score >= 0.8) {
+                if (INTENT_GET_GRADE.equals(value) && score >= 0.7) {
                     intent = INTENT_GET_GRADE;
                 }
 
