@@ -37,8 +37,8 @@ public class CourseHelper {
         if (normalizedCode.matches("^[A-Z]{3}\\d{4}$")) // EMA3048 -> EMA3048 1
             normalizedCode = normalizedCode + " 1";
 
-        if (!rawCode.equals(normalizedCode))
-            logger.debug("Normalize code {} -> {}", rawCode, normalizedCode);
+//        if (!rawCode.equals(normalizedCode))
+//            logger.debug("Normalize code {} -> {}", rawCode, normalizedCode);
 
         return normalizedCode;
     }
