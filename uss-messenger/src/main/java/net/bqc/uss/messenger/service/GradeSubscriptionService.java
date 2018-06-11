@@ -11,9 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 
 import static net.bqc.uss.messenger.service.MyMessengerService.*;
 
@@ -109,7 +107,7 @@ public class GradeSubscriptionService {
                     getMessage("grade.text.has_already_sub.support", null));
         }
         // check maximum number of student codes allowed to subscribe
-        else if (studentCodes.size() >= MyMessengerService.MAX_PAYLOAD_ELEMENTS) {
+        else if (studentCodes.size() > MyMessengerService.MAX_PAYLOAD_ELEMENTS) {
             infoMessage = MyMessengerService.buildGenericMessage(
                     getMessage("text.title.fail", null),
                     getMessage("grade.text.exceed_allowed_student_codes", new Object[] { MyMessengerService.MAX_PAYLOAD_ELEMENTS }),
@@ -154,7 +152,7 @@ public class GradeSubscriptionService {
             myMessengerService.sendTextMessage(userId,
                     getMessage("grade.text.std.current_processing", new Object[] { studentCode }));
         }
-        else if (student.getCourses().size() == 0) {
+        else if (student.getCourses() == null || student.getCourses().size() == 0) {
             myMessengerService.sendTextMessage(userId,
                     getMessage("grade.text.std.no_course", new Object[] { studentCode }));
         }
@@ -178,7 +176,21 @@ public class GradeSubscriptionService {
     }
 
     public void sendCoursesList(String recipient, Student student) {
-        Message courseListMessage = buildCoursesInfoMessage(student.getCourses());
+        List<Course> originalCourses = new ArrayList<>(student.getCourses());
+
+        // in case of exceeding allowed # of payload elements
+        if (originalCourses.size() > MyMessengerService.MAX_PAYLOAD_ELEMENTS) {
+            // break courses in to two parts: 5 and the rest then send turn by turn
+            List<Course> firstCourses = originalCourses.subList(0, 5);
+
+            // remove firstCourses from originalCourses
+            originalCourses = originalCourses.subList(5, originalCourses.size());
+
+            Message firstCoursesMessage = buildCoursesInfoMessage(new HashSet<>(firstCourses));
+            myMessengerService.sendMessage(recipient, firstCoursesMessage);
+        }
+
+        Message courseListMessage = buildCoursesInfoMessage(new HashSet<>(originalCourses));
         myMessengerService.sendMessage(recipient, courseListMessage);
     }
 
