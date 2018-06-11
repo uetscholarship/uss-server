@@ -14,7 +14,7 @@ public interface CourseRepository extends CrudRepository<Course, Integer> {
 
     Course findByCode(String code);
 
-    @Query("select c from Course c join fetch c.students where c.code=:code")
+    @Query("select c from Course c left join fetch c.students where c.code=:code")
     Course findWithStudentsByCode(@Param("code") String code);
 
     @Query("select c.code from Course c where c.gradeUrl is not null")
