@@ -2,6 +2,7 @@ package net.bqc.uss.messenger.jaxws;
 
 import com.restfb.types.send.Message;
 import net.bqc.uss.messenger.dao.GradeSubscriberDaoImpl;
+import net.bqc.uss.messenger.service.GradeSubscriptionService;
 import net.bqc.uss.messenger.service.MyMessengerService;
 import net.bqc.uss.messenger.task.NotifyTask;
 import net.bqc.uss.uetgrade_server.entity.Course;
@@ -23,6 +24,9 @@ import java.util.stream.Collectors;
 public class MessengerServiceEndpoint extends SpringBeanAutowiringSupport implements net.bqc.uss.service.MessengerService {
 
 	private static final Logger logger = LoggerFactory.getLogger(MessengerServiceEndpoint.class);
+
+	@Autowired
+	private GradeSubscriptionService gradeSubscriptionService;
 
 	@Autowired
 	private MyMessengerService myMessengerService;
@@ -67,12 +71,12 @@ public class MessengerServiceEndpoint extends SpringBeanAutowiringSupport implem
 					List<String> subscribers = gradeSubscriberDao.findSubscribersByStudentCode(student.getCode());
 					if (student.getCourses().size() > 0) {
 						subscribers.forEach(subscriber -> {
-							Message introMessage = myMessengerService.buildGenericMessage(
+							Message introMessage = MyMessengerService.buildGenericMessage(
 									myMessengerService.getMessage("grade.new_grade.std.title", null),
 									myMessengerService.getMessage("grade.new_grade.std.subtitle",
 											new Object[] { student.getName(), student.getCode(), student.getCourses().size() }),
 									null , null);
-							Message gradesInfoMessage = myMessengerService.buildCoursesInfoMessage(student.getCourses());
+							Message gradesInfoMessage = gradeSubscriptionService.buildCoursesInfoMessage(student.getCourses());
 
 							// notify users by multiple threads
 							NotifyTask notifyTask = (NotifyTask) applicationContext.getBean("notifyTask");
