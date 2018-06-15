@@ -12,6 +12,8 @@ import java.util.Set;
 @Table(name = "student")
 public class Student implements Serializable {
 
+    private static final long serialVersionUID = 6919148187602786949L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "student_id")
@@ -31,7 +33,7 @@ public class Student implements Serializable {
 
     @Column(name = "is_subscribed")
     @Type(type = "org.hibernate.type.NumericBooleanType")
-    private boolean isSubscribed = true; // default true on the first save to db
+    private boolean subscribed = true; // default true on the first save to db
 
     @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.LAZY)
     @JoinTable(
@@ -81,11 +83,11 @@ public class Student implements Serializable {
     }
 
     public void setSubscribed(boolean subscribed) {
-        isSubscribed = subscribed;
+        this.subscribed = subscribed;
     }
 
     public boolean isSubscribed() {
-        return isSubscribed;
+        return subscribed;
     }
 
     public String getClazz() {
@@ -121,7 +123,7 @@ public class Student implements Serializable {
         return "Student{" +
                 "code='" + code + '\'' +
                 ", name='" + name + '\'' +
-                ", isSubscribed=" + isSubscribed +
+                ", subscribed=" + subscribed +
                 ", courses=" + courses +
                 '}';
     }

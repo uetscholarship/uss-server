@@ -9,6 +9,8 @@ import java.util.Set;
 @Table(name = "course")
 public class Course implements Serializable {
 
+    private static final long serialVersionUID = 7385885583939990810L;
+
     @Id
     @Column(name = "course_id")
     @GeneratedValue(strategy = GenerationType.AUTO)

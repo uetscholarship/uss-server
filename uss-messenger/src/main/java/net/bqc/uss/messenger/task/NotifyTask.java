@@ -41,7 +41,7 @@ public class NotifyTask implements Runnable {
             logger.debug("Done notifyTask [{}]", Thread.currentThread().getName());
         }
         catch (FacebookException e) {
-            logger.debug("Facebook Exception: {}" + e.getMessage());
+            logger.debug("Facebook Exception: {}", e.getMessage());
         }
         catch (Exception e) {
             e.printStackTrace();
