@@ -1,17 +1,15 @@
 package net.bqc.uss.uetnews_server.retriever;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.shirwa.simplistic_rss.RssItem;
+import com.shirwa.simplistic_rss.RssReader;
+import net.bqc.uss.uetnews_server.notifier.FirebaseNotifier;
+import net.bqc.uss.uetnews_server.notifier.MessengerNotifier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.shirwa.simplistic_rss.RssItem;
-import com.shirwa.simplistic_rss.RssReader;
-
-import net.bqc.uss.uetnews_server.notifier.FirebaseNotifier;
-import net.bqc.uss.uetnews_server.notifier.MessengerNotifier;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class RetrieveNewsTask {

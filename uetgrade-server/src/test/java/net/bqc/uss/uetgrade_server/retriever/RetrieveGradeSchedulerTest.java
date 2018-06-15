@@ -3,7 +3,6 @@ package net.bqc.uss.uetgrade_server.retriever;
 import net.bqc.uss.uetgrade_server.entity.Course;
 import net.bqc.uss.uetgrade_server.repository.CourseRepository;
 import net.bqc.uss.uetgrade_server.retriever.grade.RetrieveGradeScheduler;
-import net.bqc.uss.uetgrade_server.retriever.grade.RetrieveGradeTask;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

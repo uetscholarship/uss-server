@@ -4,7 +4,6 @@ import net.bqc.uss.messenger.jaxws.MessengerServiceEndpoint;
 import net.bqc.uss.messenger.jaxws.NotifierServiceEndpoint;
 import net.bqc.uss.service.MessengerService;
 import net.bqc.uss.service.NotifierService;
-
 import net.bqc.uss.service.UetGradeService;
 import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.cxf.jaxws.EndpointImpl;

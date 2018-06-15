@@ -1,7 +1,6 @@
 package net.bqc.uss.messenger.dao;
 
 import net.bqc.uss.messenger.model.Subscriber;
-import net.bqc.uss.messenger.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

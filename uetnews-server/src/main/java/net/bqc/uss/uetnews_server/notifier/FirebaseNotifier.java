@@ -1,17 +1,15 @@
 package net.bqc.uss.uetnews_server.notifier;
 
+import com.shirwa.simplistic_rss.RssItem;
+import net.bqc.uss.uetnews_server.entity.FcmMessage;
+import net.bqc.uss.uetnews_server.entity.FcmNotification;
+import net.bqc.uss.uetnews_server.util.RestTemplateUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
-
-import com.shirwa.simplistic_rss.RssItem;
-
-import net.bqc.uss.uetnews_server.entity.FcmMessage;
-import net.bqc.uss.uetnews_server.entity.FcmNotification;
-import net.bqc.uss.uetnews_server.util.RestTemplateUtil;
 
 @Service
 public class FirebaseNotifier implements INotifier {

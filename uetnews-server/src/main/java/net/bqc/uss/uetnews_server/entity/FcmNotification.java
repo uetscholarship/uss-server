@@ -1,9 +1,9 @@
 package net.bqc.uss.uetnews_server.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class FcmNotification {
 

@@ -1,26 +1,20 @@
 package net.bqc.uss.messenger.service;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-
-import javax.annotation.PostConstruct;
-
+import com.restfb.DefaultFacebookClient;
+import com.restfb.FacebookClient;
+import com.restfb.Parameter;
+import com.restfb.Version;
+import com.restfb.types.User;
 import com.restfb.types.send.*;
-import net.bqc.uss.service.UetGradeService;
-import net.bqc.uss.uetgrade_server.entity.Course;
-import net.bqc.uss.uetgrade_server.entity.Student;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
-import com.restfb.DefaultFacebookClient;
-import com.restfb.FacebookClient;
-import com.restfb.Parameter;
-import com.restfb.Version;
-import com.restfb.types.User;
+
+import javax.annotation.PostConstruct;
+import java.util.Locale;
 
 @Service
 public class MyMessengerService {

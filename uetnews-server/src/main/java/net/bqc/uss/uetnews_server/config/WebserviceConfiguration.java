@@ -1,11 +1,10 @@
 package net.bqc.uss.uetnews_server.config;
 
+import net.bqc.uss.service.NotifierService;
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import net.bqc.uss.service.NotifierService;
 
 /**
  * Created by jcia on 9/28/17.

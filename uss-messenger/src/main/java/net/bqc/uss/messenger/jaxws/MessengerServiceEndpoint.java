@@ -15,7 +15,9 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 
 import javax.jws.WebService;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @WebService(serviceName = "MessengerService", portName = "MessengerPort",

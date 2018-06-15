@@ -1,8 +1,8 @@
 package net.bqc.uss.messenger.dao;
 
-import java.util.List;
-
 import net.bqc.uss.messenger.model.User;
+
+import java.util.List;
 
 public interface UserDao {
 	User findByFbId(String fbId);

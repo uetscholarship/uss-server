@@ -1,7 +1,6 @@
 package net.bqc.uss.uetgrade_server.config;
 
 import net.bqc.uss.service.MessengerService;
-import net.bqc.uss.service.NotifierService;
 import net.bqc.uss.service.UetGradeService;
 import net.bqc.uss.uetgrade_server.jaxws.UetGradeServiceEndpoint;
 import org.apache.cxf.bus.spring.SpringBus;
