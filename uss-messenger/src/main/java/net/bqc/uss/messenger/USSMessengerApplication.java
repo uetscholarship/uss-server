@@ -11,7 +11,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import javax.sql.DataSource;
 
 @SpringBootApplication
-@ComponentScan("net.bqc.uss.messenger")
 public class USSMessengerApplication {
 
 	@Autowired

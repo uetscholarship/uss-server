@@ -259,7 +259,7 @@ public class GradeSubscriptionService {
     }
 
     private String getMessage(String key, Object[] objects) {
-        return messageSource.getMessage(key, objects, Locale.ENGLISH);
+        return messageSource.getMessage(key, objects, Locale.US);
     }
 
     public void confirmToSubscribe(String userId, String studentCode) {

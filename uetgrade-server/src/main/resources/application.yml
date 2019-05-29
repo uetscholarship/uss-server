@@ -4,7 +4,7 @@ server:
 uet:
   grade:
     host: http://e4b.vn/viewgrade
-    term.code: 2
+    term.code: 67
     education.type: 0
     account:
       username: ${UET_GRADE_USERNAME}
