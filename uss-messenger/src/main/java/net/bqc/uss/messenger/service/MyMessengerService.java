@@ -127,6 +127,6 @@ public class MyMessengerService {
 	}
 
 	public String getMessage(String key, Object[] objects) {
-		return messageSource.getMessage(key, objects, Locale.ENGLISH);
+		return messageSource.getMessage(key, objects, Locale.US);
 	}
 }
